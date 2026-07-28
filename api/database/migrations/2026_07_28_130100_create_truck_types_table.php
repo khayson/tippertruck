@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('capacity_label');
             $table->decimal('capacity_tonnes_min', 5, 1);
-            $table->decimal('capacity_tonnes_max', 5, 1);
+            $table->decimal('capacity_tonnes_max', 5, 1)->nullable();
             $table->decimal('price_ghs', 10, 2);
             $table->boolean('is_popular')->default(false);
             $table->boolean('is_active')->default(true);

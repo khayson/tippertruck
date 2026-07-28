@@ -241,6 +241,9 @@ test('seeders run cleanly', function () {
     expect(User::where('role', UserRole::Client)->count())->toBe(1);
 
     expect(TruckType::where('is_popular', true)->first()->price_ghs)->toBe('450.00');
+
+    $large = TruckType::where('slug', 'large')->first();
+    expect($large->capacity_tonnes_max)->toBeNull();
 });
 
 test('seeders run clean twice in a row', function () {
@@ -249,4 +252,6 @@ test('seeders run clean twice in a row', function () {
 
     expect(SandType::count())->toBe(3);
     expect(TruckType::count())->toBe(3);
+    expect(User::count())->toBe(3);
+    expect(Order::count())->toBe(8);
 });

@@ -19,7 +19,17 @@ class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        Order::query()->delete();
+        if (! app()->environment('local', 'testing')) {
+            $this->command?->info('OrderSeeder skipped — not in local or testing environment.');
+
+            return;
+        }
+
+        if (Order::exists()) {
+            $this->command?->info('OrderSeeder skipped — orders already exist.');
+
+            return;
+        }
 
         $client = User::where('email', 'client@tippertruck.test')->firstOrFail();
         $operator = User::where('email', 'operator@tippertruck.test')->firstOrFail();
@@ -66,9 +76,9 @@ class OrderSeeder extends Seeder
                 'momo_phone' => $isMomo ? '0241234567' : null,
                 'momo_network' => $isMomo ? MomoNetwork::Mtn : null,
                 'status' => $spec['status'],
-                'assigned_operator_id' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered]) ? $operator->id : null,
+                'assigned_operator_id' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered], true) ? $operator->id : null,
                 'confirmed_at' => $createdAt,
-                'dispatched_at' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered]) ? $createdAt->copy()->addHours(2) : null,
+                'dispatched_at' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered], true) ? $createdAt->copy()->addHours(2) : null,
                 'delivered_at' => $spec['status'] === OrderStatus::Delivered ? $createdAt->copy()->addHours(5) : null,
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
@@ -102,7 +112,7 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        if (in_array($finalStatus, [OrderStatus::OnTheWay, OrderStatus::Delivered])) {
+        if (in_array($finalStatus, [OrderStatus::OnTheWay, OrderStatus::Delivered], true)) {
             OrderStatusLog::create([
                 'order_id' => $order->id,
                 'old_status' => OrderStatus::Confirmed,
