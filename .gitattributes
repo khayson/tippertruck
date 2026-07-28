@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.docx binary
+*.jks binary
+*.keystore binary
+
+# Keep vendored/generated noise out of language stats and diffs
+mobile/ios/**       linguist-vendored
+mobile/android/**   linguist-vendored
+api/public/**       linguist-vendored
+docs/**             linguist-documentation
