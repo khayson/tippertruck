@@ -24,8 +24,8 @@ for cmd in git php composer flutter; do
 done
 
 PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
-php -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);' \
-  || die "PHP 8.3+ required, found $PHP_VERSION"
+php -r 'exit(version_compare(PHP_VERSION, "8.4.0", ">=") ? 0 : 1);' \
+  || die "PHP 8.4+ required, found $PHP_VERSION"
 
 printf '  php %s · composer %s · flutter %s\n' \
   "$PHP_VERSION" \

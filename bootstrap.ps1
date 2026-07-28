@@ -39,8 +39,8 @@ foreach ($cmd in 'git', 'php', 'composer', 'flutter') {
 }
 
 $phpVersion = (php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
-php -r 'exit(version_compare(PHP_VERSION, "8.3.0", ">=") ? 0 : 1);'
-if ($LASTEXITCODE -ne 0) { Die "PHP 8.3+ required, found $phpVersion" }
+php -r 'exit(version_compare(PHP_VERSION, "8.4.0", ">=") ? 0 : 1);'
+if ($LASTEXITCODE -ne 0) { Die "PHP 8.4+ required, found $phpVersion" }
 
 $flutterVersion = (flutter --version | Select-Object -First 1)
 Note "php $phpVersion"

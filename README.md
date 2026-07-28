@@ -7,7 +7,7 @@ Final year project — BSc Information Technology, Faculty of Computing and Info
 | | |
 |---|---|
 | **Mobile** | Flutter 3.x · Dart 3.x · Material 3 · go_router · Provider · Dio |
-| **API** | Laravel 13.x · PHP 8.3 · MySQL 8 · Sanctum · Filament v5 |
+| **API** | Laravel 13.x · PHP 8.4 · MySQL 8 · Sanctum · Filament v5 |
 | **Docs** | [Build spec](docs/BUILD_SPEC.md) · [API contract](docs/API_CONTRACT.md) |
 
 ## What it does
@@ -25,7 +25,7 @@ Clients book tipper truck sand deliveries from their phone: pick a sand type, pi
 
 ## Getting started
 
-Requires PHP 8.3+, Composer 2, MySQL 8, Flutter 3.x, Git.
+Requires PHP 8.4+, Composer 2, MySQL 8, Flutter 3.x, Git.
 
 On Windows, [Laragon](https://laragon.org/) or [Laravel Herd](https://herd.laravel.com/windows) gives you PHP, Composer and MySQL in one install.
 
