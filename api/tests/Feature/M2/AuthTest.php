@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
@@ -274,4 +276,12 @@ test('500 returns envelope shape with generic message when debug off', function 
             'data' => null,
             'errors' => null,
         ]);
+});
+
+test('DUMMY_HASH is a valid 60-char bcrypt hash that rejects all passwords', function () {
+    $hash = AuthService::DUMMY_HASH;
+
+    expect(strlen($hash))->toBe(60);
+    expect(password_get_info($hash)['algoName'])->toBe('bcrypt');
+    expect(Hash::check('anything', $hash))->toBeFalse();
 });
