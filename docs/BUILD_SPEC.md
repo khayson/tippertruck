@@ -36,7 +36,9 @@ Six tables as specified, with four corrections.
 
 **sand_types** — `id`, `name`, `slug` (unique), `description`, `icon` (nullable), `is_active` bool, `sort_order`, timestamps.
 
-**truck_types** — `id`, `name`, `slug` (unique), `capacity_label` (e.g. "4–7 tonnes"), `capacity_tonnes_min`, `capacity_tonnes_max`, `price_ghs` decimal(10,2), `is_popular` bool, `is_active` bool, `sort_order`, timestamps.
+**truck_types** — `id`, `name`, `slug` (unique), `capacity_label` (e.g. "4–7 tonnes"), `capacity_tonnes_min`, `capacity_tonnes_max` (nullable — null means no upper bound, e.g. "8+ tonnes"), `price_ghs` decimal(10,2), `is_popular` bool, `is_active` bool, `sort_order`, timestamps.
+
+> **Note:** All `enum(…)` columns in this section are implemented as `VARCHAR` with PHP backed enum casts — see §8 item 9 for the rationale.
 
 **orders** — `id`, `order_ref` (unique, `TT-YYYYMMDD-XXXX`), `user_id` FK→users **restrict**, `sand_type_id` FK→sand_types **restrict**, `truck_type_id` FK→truck_types **restrict**, `price_ghs` decimal(10,2), `delivery_fee_ghs` decimal(10,2) default 0, `total_ghs` decimal(10,2), `recipient_name`, `recipient_phone`, `street_address`, `region`, `city`, `landmark` (nullable), `delivery_note` (nullable), `payment_method` enum(`momo`,`cod`), `payment_status` enum(`pending`,`paid`,`failed`) default `pending`, `momo_name` (nullable), `momo_phone` (nullable), `momo_network` enum(`mtn`,`telecel`,`airteltigo`, nullable), `status` enum(`confirmed`,`on_the_way`,`delivered`,`cancelled`) default `confirmed`, `assigned_operator_id` FK→users nullable, `confirmed_at`, `dispatched_at`, `delivered_at`, timestamps. Indexes on `(user_id, created_at)` and `status`.
 
@@ -152,6 +154,8 @@ The code and the document must agree, or you lose marks for both.
 6. **§3.4.5:** wireframes show Vodafone Cash. It's Telecel Cash now. Small detail, but a Ghanaian examiner will notice.
 7. **§1.4, §2.1, FR15:** "real-time tracking" → "real-time order *status* tracking (GPS map tracking deferred)". You already say GPS is out of scope; make the two statements consistent.
 8. **§1.6:** the offline regression is real. The mitigation actually built — cached config + cached order history + an offline banner — is worth documenting rather than leaving as pure future work.
+
+9. **§2.1 all enum columns:** the spec and the proposal's Chapter 3 specify SQL `ENUM` column types. The implementation uses `VARCHAR` columns with PHP backed enum casts instead. MySQL `ENUM` bakes the allowed values into the column definition, so adding or removing a value requires a raw `ALTER TABLE … MODIFY COLUMN` — on a large table that rewrites every row. Application-level PHP enums give the same value-safety guarantee (invalid values are rejected before they reach the database) while allowing new values through a normal migration that adds no DDL. This is the standard Laravel approach and the one Eloquent's enum casting is designed for.
 
 ---
 

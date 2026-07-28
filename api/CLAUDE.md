@@ -6,7 +6,7 @@ Laravel 13.x REST API + Filament v5 admin panel for the Tipper Truck sand orderi
 
 ## Stack
 
-PHP 8.3+ · Laravel 13.x · MySQL 8 · Sanctum (`php artisan install:api`) · Filament v5 · Pest · Pint
+PHP 8.4+ · Laravel 13.x · MySQL 8 · Sanctum (`php artisan install:api`) · Filament v5 · Pest · Pint
 
 ## Setup
 
