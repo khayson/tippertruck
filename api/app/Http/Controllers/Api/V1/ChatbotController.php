@@ -20,7 +20,11 @@ class ChatbotController extends Controller
 
     public function message(ChatbotMessageRequest $request): JsonResponse
     {
-        $result = $this->chatbotService->respond($request->validated('message'));
+        $result = $this->chatbotService->respond(
+            $request->validated('message'),
+            $request->user(),
+            (int) $request->validated('unmatched_count', 0),
+        );
 
         return $this->success($result);
     }

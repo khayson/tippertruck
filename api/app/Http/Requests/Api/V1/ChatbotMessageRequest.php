@@ -17,6 +17,7 @@ class ChatbotMessageRequest extends FormRequest
     {
         return [
             'message' => ['required', 'string', 'max:1000'],
+            'unmatched_count' => ['sometimes', 'integer', 'min:0', 'max:100'],
         ];
     }
 }

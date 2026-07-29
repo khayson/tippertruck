@@ -122,18 +122,37 @@ User's issues, newest first, with `status`, `admin_response`, and the linked `or
 ## Chatbot
 
 ### POST /chatbot/message *(auth)*
-`{ "message": "how much is a medium truck" }`
+```json
+{ "message": "how much is a medium truck", "unmatched_count": 0 }
+```
+
+`unmatched_count` is optional (default `0`). The client should echo back the `unmatched_count` from the previous response so the server can track consecutive misses and offer escalation.
 
 → `200`
 ```json
-{ "reply": "Medium Truck is GHS 450 and carries 4–7 tonnes.",
+{ "reply": "Medium Truck costs GHS 450.00 and carries 4–7 tonnes.",
   "matched_rule": "pricing",
-  "quick_replies": [ { "label":"💰 Prices", "message":"What are your prices?" } ] }
+  "confidence": 0.90,
+  "entities": { "truck_type": { "id": 2, "name": "Medium Truck" } },
+  "quick_replies": [ { "label": "Sand types", "message": "What sand types do you have?" } ],
+  "unmatched_count": 0 }
 ```
+
+**Response fields:**
+- `reply` — the bot's answer, with prices and type names interpolated from the database at request time.
+- `matched_rule` — the rule name that won scoring (`"fallback"` when no rule scored above the confidence threshold).
+- `confidence` — `0.00`–`1.00` float derived from the winning rule's score. Below the threshold the response is treated as uncertain.
+- `entities` — extracted truck type and/or sand type from the input, as `{ "truck_type": { "id", "name" }, "sand_type": { "id", "name" } }`. Empty object `{}` when no entity was detected. When an entity is present, the reply answers about that entity specifically rather than listing everything.
+- `quick_replies` — suggested follow-up messages. When the bot is uncertain, these are the top 3 scoring intents. After 2+ consecutive misses (`unmatched_count >= 2`), a "Report an issue" quick reply is appended.
+- `unmatched_count` — echoed back (or incremented on a miss) so the client can pass it on the next request.
 
 Rules live server-side and **interpolate live prices from the database**. If an admin changes the Medium price, the bot says the new number without an app update — hardcoding prices in Dart is the mistake to avoid here. The app ships a small fallback rule set for offline use and labels those replies as offline.
 
-Twelve rules: pricing, sand types, truck sizes, how to book, payment methods, MoMo help, cash on delivery, tracking stages, delivery time, order history, reporting an issue, greeting/fallback.
+Thirteen rules: greeting, pricing, sand types, truck sizes, how to book, payment methods, MoMo help, cash on delivery, order status, tracking stages, delivery time, order history, reporting an issue, plus fallback.
+
+**Matching engine:** input is normalised (lowercased, punctuation stripped, contractions expanded, synonyms mapped to canonical terms) and tokenised. Every rule declares weighted patterns; all rules are scored and the highest total wins, with ties broken by an explicit priority. Word-boundary matching prevents substring collisions (e.g. "hi" does not match "this"). Tokens of 5+ characters tolerate Levenshtein distance 1 (distance 2 for 8+ characters); shorter tokens require exact matches.
+
+**Order status intent:** when the user asks about their order, the bot looks up the authenticated user's most recent non-terminal order and replies with its `order_ref`, status label, and progress percent. If no active order exists, it offers to help book one.
 
 ---
 
