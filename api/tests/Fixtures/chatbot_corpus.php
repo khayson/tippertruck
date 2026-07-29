@@ -62,12 +62,43 @@ return [
     ['input' => 'do u accept cod', 'intent' => 'cash_on_delivery'],
     ['input' => 'i prefer to pay on delivery please', 'intent' => 'cash_on_delivery'],
 
+    // --- report_issue (4 general + 8 complaint-routed) ---
+    ['input' => 'i want to report a problem with my delivery', 'intent' => 'report_issue'],
+    ['input' => 'the sand i received was not enough how do i complain', 'intent' => 'report_issue', 'suggested_issue_type' => 'wrong_quantity'],
+    ['input' => 'hw do i report an issue', 'intent' => 'report_issue'],
+    ['input' => 'i have a complaint about the driver', 'intent' => 'report_issue'],
+
+    // complaint vocabulary — late_delivery
+    ['input' => 'my delivery is late where is the truck', 'intent' => 'report_issue', 'suggested_issue_type' => 'late_delivery'],
+    ['input' => 'my sand has not come and i am still waiting', 'intent' => 'report_issue', 'suggested_issue_type' => 'late_delivery'],
+
+    // complaint vocabulary — payment_issue
+    ['input' => 'i paid but i have not received any confirmation', 'intent' => 'report_issue', 'suggested_issue_type' => 'payment_issue'],
+    ['input' => 'my money was deducted but the order shows unpaid', 'intent' => 'report_issue', 'suggested_issue_type' => 'payment_issue'],
+
+    // complaint vocabulary — wrong_sand_type
+    ['input' => 'you gave me the wrong sand type', 'intent' => 'report_issue', 'suggested_issue_type' => 'wrong_sand_type'],
+
+    // complaint vocabulary — damaged_goods
+    ['input' => 'the sand was contaminated with rubbish', 'intent' => 'report_issue', 'suggested_issue_type' => 'damaged_goods'],
+
+    // complaint vocabulary — driver_conduct
+    ['input' => 'the driver was very rude to me at the site', 'intent' => 'report_issue', 'suggested_issue_type' => 'driver_conduct'],
+
+    // complaint vocabulary — wrong_quantity
+    ['input' => 'the sand was not enough less than what i ordered', 'intent' => 'report_issue', 'suggested_issue_type' => 'wrong_quantity'],
+
     // --- order_status (5) ---
     ['input' => 'where is my order', 'intent' => 'order_status'],
     ['input' => 'check my delivery status', 'intent' => 'order_status'],
     ['input' => 'how far is my sand', 'intent' => 'order_status'],
     ['input' => 'what is the status of my order pls', 'intent' => 'order_status'],
     ['input' => 'has my order been dispatched', 'intent' => 'order_status'],
+
+    // --- order_cancellation (3) ---
+    ['input' => 'i want to cancel my order', 'intent' => 'order_cancellation'],
+    ['input' => 'how do i cancel an order', 'intent' => 'order_cancellation'],
+    ['input' => 'cancel this order for me pls', 'intent' => 'order_cancellation'],
 
     // --- tracking (3) ---
     ['input' => 'what are the tracking stages', 'intent' => 'tracking'],
@@ -80,16 +111,24 @@ return [
     ['input' => 'what is the estimated delivery time', 'intent' => 'delivery_time'],
     ['input' => 'how many hours for delivery in accra', 'intent' => 'delivery_time'],
 
+    // --- delivery_coverage (3) ---
+    ['input' => 'do you deliver to tamale', 'intent' => 'delivery_coverage'],
+    ['input' => 'which regions do you cover', 'intent' => 'delivery_coverage'],
+    ['input' => 'can i get delivery to cape coast', 'intent' => 'delivery_coverage'],
+
     // --- order_history (3) ---
     ['input' => 'where can i see my old orders', 'intent' => 'order_history'],
     ['input' => 'show me my previous orders pls', 'intent' => 'order_history'],
     ['input' => 'i want to view my order history', 'intent' => 'order_history'],
 
-    // --- report_issue (4) ---
-    ['input' => 'i want to report a problem with my delivery', 'intent' => 'report_issue'],
-    ['input' => 'the sand i received was not enough how do i complain', 'intent' => 'report_issue'],
-    ['input' => 'hw do i report an issue', 'intent' => 'report_issue'],
-    ['input' => 'i have a complaint about the driver', 'intent' => 'report_issue'],
+    // --- human_handoff (3) ---
+    ['input' => 'can i speak to a real person', 'intent' => 'human_handoff'],
+    ['input' => 'i want to talk to someone please', 'intent' => 'human_handoff'],
+    ['input' => 'is there a customer service number', 'intent' => 'human_handoff'],
+
+    // --- known limitation: negation not handled ---
+    // "momo" triggers momo_help regardless of "do not want" context
+    ['input' => 'i dont want to use momo', 'intent' => 'momo_help'],
 
     // --- fallback: gibberish, off-topic, ambiguous (12) ---
     ['input' => 'asdfghjkl', 'intent' => 'fallback'],

@@ -33,6 +33,10 @@ foreach ($corpus as $i => $entry) {
 
         $response->assertStatus(200);
         expect($response->json('data.matched_rule'))->toBe($entry['intent']);
+
+        if (isset($entry['suggested_issue_type'])) {
+            expect($response->json('data.suggested_issue_type'))->toBe($entry['suggested_issue_type']);
+        }
     });
 }
 
@@ -52,11 +56,13 @@ test('response has correct shape with new fields', function () {
             'entities',
             'quick_replies',
             'unmatched_count',
+            'suggested_issue_type',
         ],
     ]);
 
     expect($response->json('data.confidence'))->toBeFloat();
     expect($response->json('data.unmatched_count'))->toBeInt();
+    expect($response->json('data.suggested_issue_type'))->toBeNull();
 });
 
 // ─── Entity-scoped answers ──────────────────────────────────────────
@@ -99,6 +105,51 @@ test('truck sizes reply for specific truck entity', function () {
     expect($data['entities'])->toHaveKey('truck_type');
     expect($data['entities']['truck_type']['name'])->toBe('Large Truck');
     expect($data['reply'])->not->toContain('Small Truck');
+});
+
+// ─── Complaint routing ─────────────────────────────────────────────
+
+test('complaint about late delivery returns suggested_issue_type', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'my delivery is late and has been delayed',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('report_issue');
+    expect($data['suggested_issue_type'])->toBe('late_delivery');
+});
+
+test('complaint about payment returns suggested_issue_type', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'i paid but nothing happened',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('report_issue');
+    expect($data['suggested_issue_type'])->toBe('payment_issue');
+});
+
+test('complaint quick_replies include issue_type for prefill', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'the driver was rude to me',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('report_issue');
+    expect($data['suggested_issue_type'])->toBe('driver_conduct');
+
+    $firstReply = $data['quick_replies'][0];
+    expect($firstReply['issue_type'])->toBe('driver_conduct');
+});
+
+test('general report_issue has null suggested_issue_type', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'i want to report an issue',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('report_issue');
+    expect($data['suggested_issue_type'])->toBeNull();
 });
 
 // ─── Order status ───────────────────────────────────────────────────
@@ -168,6 +219,58 @@ test('order_status ignores terminal orders', function () {
     ]);
 
     expect($response->json('data.reply'))->toContain('no active orders');
+});
+
+// ─── Order cancellation ────────────────────────────────────────────
+
+test('order_cancellation explains cancel process', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'how do i cancel my order',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('order_cancellation');
+    expect($data['reply'])->toContain('Confirmed');
+    expect($data['reply'])->toContain('report an issue');
+});
+
+// ─── Delivery coverage ─────────────────────────────────────────────
+
+test('delivery_coverage lists regions', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'which regions do you deliver to',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('delivery_coverage');
+    expect($data['reply'])->toContain('Greater Accra');
+    expect($data['reply'])->toContain('Ashanti');
+});
+
+test('delivery_coverage resolves city to region', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'do you deliver to kumasi',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('delivery_coverage');
+    expect($data['reply'])->toContain('Kumasi');
+    expect($data['reply'])->toContain('Ashanti');
+});
+
+// ─── Human handoff ──────────────────────────────────────────────────
+
+test('human_handoff routes to issue reporting', function () {
+    $response = $this->actingAs($this->user)->postJson('/api/v1/chatbot/message', [
+        'message' => 'can i speak to someone please',
+    ]);
+
+    $data = $response->json('data');
+    expect($data['matched_rule'])->toBe('human_handoff');
+    expect($data['reply'])->toContain('report');
+
+    $labels = array_column($data['quick_replies'], 'label');
+    expect($labels)->toContain('Report issue');
 });
 
 // ─── Confidence and uncertainty ─────────────────────────────────────

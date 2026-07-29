@@ -13,6 +13,8 @@ use App\Models\User;
 
 class ChatbotService
 {
+    private array $lastTokens = [];
+
     private const float CONFIDENCE_THRESHOLD = 0.20;
 
     private const float MAX_CONFIDENCE_SCORE = 10.0;
@@ -47,6 +49,8 @@ class ChatbotService
         'ive' => 'i have',
         "there's" => 'there is',
         'theres' => 'there is',
+        "hasn't" => 'has not',
+        'hasnt' => 'has not',
         'hw' => 'how',
         'u' => 'you',
         'pls' => 'please',
@@ -72,6 +76,7 @@ class ChatbotService
         'wan' => 'want',
         'giv' => 'give',
         'b4' => 'before',
+        'abeg' => 'please',
     ];
 
     private const array MULTI_WORD_SYNONYMS = [
@@ -83,6 +88,8 @@ class ChatbotService
         'cash on delivery' => 'cod',
         'pay on delivery' => 'cod',
         'pay on arrival' => 'cod',
+        'price list' => 'pricelist',
+        'how much be' => 'how much',
     ];
 
     private const array SINGLE_WORD_SYNONYMS = [
@@ -96,10 +103,58 @@ class ChatbotService
         'charges' => 'price',
         'rates' => 'price',
         'fees' => 'price',
+        'cheapest' => 'price',
+        'cheaper' => 'price',
+        'affordable' => 'price',
+        'budget' => 'price',
         'aggregate' => 'sand',
         'mtn' => 'momo',
         'telecel' => 'momo',
         'airteltigo' => 'momo',
+    ];
+
+    private const array CITY_TO_REGION = [
+        'accra' => 'Greater Accra',
+        'kumasi' => 'Ashanti',
+        'takoradi' => 'Western',
+        'tamale' => 'Northern',
+        'cape coast' => 'Central',
+        'koforidua' => 'Eastern',
+        'sunyani' => 'Bono',
+        'ho' => 'Volta',
+        'wa' => 'Upper West',
+        'bolgatanga' => 'Upper East',
+    ];
+
+    // Maps complaint keywords to issue_type enum values
+    private const array COMPLAINT_ISSUE_MAP = [
+        'late' => 'late_delivery',
+        'delayed' => 'late_delivery',
+        'still waiting' => 'late_delivery',
+        'taking too long' => 'late_delivery',
+        'has not come' => 'late_delivery',
+        'paid but' => 'payment_issue',
+        'deducted' => 'payment_issue',
+        'debited' => 'payment_issue',
+        'charged' => 'payment_issue',
+        'no confirmation' => 'payment_issue',
+        'money gone' => 'payment_issue',
+        'payment failed' => 'payment_issue',
+        'not enough' => 'wrong_quantity',
+        'short' => 'wrong_quantity',
+        'less than' => 'wrong_quantity',
+        'incomplete' => 'wrong_quantity',
+        'wrong sand' => 'wrong_sand_type',
+        'different sand' => 'wrong_sand_type',
+        'not what i ordered' => 'wrong_sand_type',
+        'damaged' => 'damaged_goods',
+        'spoiled' => 'damaged_goods',
+        'contaminated' => 'damaged_goods',
+        'dirty sand' => 'damaged_goods',
+        'rude' => 'driver_conduct',
+        'driver was' => 'driver_conduct',
+        'behaved' => 'driver_conduct',
+        'disrespectful' => 'driver_conduct',
     ];
 
     public function respond(string $message, ?User $user = null, int $unmatchedCount = 0): array
@@ -125,9 +180,10 @@ class ChatbotService
         }
 
         $rule = $best['rule'];
+        $this->lastTokens = $tokens;
         $reply = ($rule['reply'])($entities, $user);
 
-        return [
+        $result = [
             'reply' => $reply,
             'matched_rule' => $rule['name'],
             'confidence' => $confidence,
@@ -135,6 +191,23 @@ class ChatbotService
             'quick_replies' => $rule['quick_replies'],
             'unmatched_count' => $unmatchedCount,
         ];
+
+        if ($rule['name'] === 'report_issue') {
+            $suggestedType = $this->detectComplaintType($normalised);
+            $result['suggested_issue_type'] = $suggestedType;
+
+            if ($suggestedType !== null) {
+                $result['quick_replies'] = [
+                    ['label' => 'Report this issue', 'message' => 'I want to report a problem', 'issue_type' => $suggestedType],
+                    ['label' => 'Order status', 'message' => 'Where is my order?'],
+                    ['label' => 'Order history', 'message' => 'Where can I see my past orders?'],
+                ];
+            }
+        } else {
+            $result['suggested_issue_type'] = null;
+        }
+
+        return $result;
     }
 
     public function normalise(string $message): string
@@ -238,6 +311,9 @@ class ChatbotService
     {
         $rules = $this->rules($user);
         $results = [];
+        $hasPriceToken = in_array('price', $tokens, true)
+            || in_array('pricelist', $tokens, true)
+            || $this->matchesPhrase($tokens, ['how', 'much']);
 
         foreach ($rules as $rule) {
             $score = 0.0;
@@ -251,9 +327,19 @@ class ChatbotService
                 }
             }
 
-            if ($entities['truck_type'] !== null || $entities['sand_type'] !== null) {
-                $entityBonus = $rule['entity_bonus'] ?? 0.0;
-                if ($entityBonus > 0) {
+            $entityBonusType = $rule['entity_bonus_type'] ?? null;
+            $entityBonus = $rule['entity_bonus'] ?? 0.0;
+
+            if ($entityBonus > 0 && $entityBonusType !== null) {
+                $shouldApply = match ($entityBonusType) {
+                    'sand' => $entities['sand_type'] !== null,
+                    'sand_without_price' => $entities['sand_type'] !== null && ! $hasPriceToken,
+                    'truck' => $entities['truck_type'] !== null,
+                    'any_with_price' => ($entities['truck_type'] !== null || $entities['sand_type'] !== null) && $hasPriceToken,
+                    default => false,
+                };
+
+                if ($shouldApply) {
                     $score += $entityBonus;
                 }
             }
@@ -371,6 +457,37 @@ class ChatbotService
         return empty($result) ? (object) [] : $result;
     }
 
+    private function detectComplaintType(string $normalised): ?string
+    {
+        $multiWordPhrases = [];
+        $singleWordPhrases = [];
+
+        foreach (self::COMPLAINT_ISSUE_MAP as $phrase => $issueType) {
+            if (str_contains($phrase, ' ')) {
+                $multiWordPhrases[$phrase] = $issueType;
+            } else {
+                $singleWordPhrases[$phrase] = $issueType;
+            }
+        }
+
+        uksort($multiWordPhrases, fn (string $a, string $b) => mb_strlen($b) <=> mb_strlen($a));
+
+        foreach ($multiWordPhrases as $phrase => $issueType) {
+            if (str_contains($normalised, $phrase)) {
+                return $issueType;
+            }
+        }
+
+        $tokens = preg_split('/\s+/', $normalised, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        foreach ($singleWordPhrases as $word => $issueType) {
+            if (in_array($word, $tokens, true)) {
+                return $issueType;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param  array<int, array{rule: array, score: float, priority: int}>  $scores
      * @param  array{truck_type: ?array, sand_type: ?array}  $entities
@@ -422,6 +539,7 @@ class ChatbotService
             'entities' => $this->formatEntities($entities),
             'quick_replies' => $quickReplies,
             'unmatched_count' => $newUnmatchedCount,
+            'suggested_issue_type' => null,
         ];
     }
 
@@ -535,6 +653,61 @@ class ChatbotService
         return "Your most recent order {$latest->order_ref} is currently {$status->label()} ({$progress}% complete). You have {$otherCount} other active ".($otherCount === 1 ? 'order' : 'orders').'.';
     }
 
+    private function buildDeliveryCoverageReply(array $tokens): string
+    {
+        $regions = config('ghana.regions');
+        $normalised = implode(' ', $tokens);
+
+        $detectedCity = null;
+        $detectedRegion = null;
+
+        $multiWordCities = array_filter(
+            array_keys(self::CITY_TO_REGION),
+            fn (string $c) => str_contains($c, ' '),
+        );
+        usort($multiWordCities, fn (string $a, string $b) => mb_strlen($b) <=> mb_strlen($a));
+        foreach ($multiWordCities as $city) {
+            if (str_contains($normalised, $city)) {
+                $detectedCity = $city;
+                $detectedRegion = self::CITY_TO_REGION[$city];
+                break;
+            }
+        }
+
+        if ($detectedCity === null) {
+            foreach ($tokens as $token) {
+                if (isset(self::CITY_TO_REGION[$token])) {
+                    $detectedCity = $token;
+                    $detectedRegion = self::CITY_TO_REGION[$token];
+                    break;
+                }
+            }
+        }
+
+        if ($detectedCity === null) {
+            foreach ($tokens as $token) {
+                foreach (self::CITY_TO_REGION as $city => $region) {
+                    if ($this->tokensMatch($token, $city)) {
+                        $detectedCity = $city;
+                        $detectedRegion = $region;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if ($detectedCity !== null && $detectedRegion !== null) {
+            $cityName = ucfirst($detectedCity);
+            if (in_array($detectedRegion, $regions, true)) {
+                return "{$cityName} is in the {$detectedRegion} region. We currently serve the following regions: ".implode(', ', $regions).'. Delivery availability may vary by location within each region.';
+            }
+
+            return "{$cityName} is in the {$detectedRegion} region. We currently serve the following regions: ".implode(', ', $regions).'. Delivery availability may vary by location within each region.';
+        }
+
+        return 'We currently serve the following regions: '.implode(', ', $regions).'. Delivery availability may vary by location within each region. Please contact us if you are unsure whether we deliver to your area.';
+    }
+
     /**
      * @return array<int, array>
      */
@@ -562,9 +735,11 @@ class ChatbotService
                 'name' => 'pricing',
                 'priority' => 2,
                 'entity_bonus' => 2.0,
+                'entity_bonus_type' => 'any_with_price',
                 'patterns' => [
-                    ['phrase' => 'price', 'weight' => 3],
+                    ['phrase' => 'price', 'weight' => 4],
                     ['phrase' => 'how much', 'weight' => 4],
+                    ['phrase' => 'pricelist', 'weight' => 5],
                 ],
                 'reply' => fn (array $entities) => $this->buildPricingReply($entities),
                 'quick_replies' => [
@@ -579,6 +754,7 @@ class ChatbotService
                 'name' => 'sand_types',
                 'priority' => 3,
                 'entity_bonus' => 2.0,
+                'entity_bonus_type' => 'sand_without_price',
                 'patterns' => [
                     ['phrase' => 'sand type', 'weight' => 5],
                     ['phrase' => 'type of sand', 'weight' => 5],
@@ -587,6 +763,7 @@ class ChatbotService
                     ['phrase' => 'which sand', 'weight' => 4],
                     ['phrase' => 'what sand', 'weight' => 4],
                     ['phrase' => 'sand options', 'weight' => 4],
+                    ['phrase' => 'sand for', 'weight' => 4],
                     ['phrase' => 'sand', 'weight' => 2],
                 ],
                 'reply' => fn (array $entities) => $this->buildSandTypesReply($entities),
@@ -602,6 +779,7 @@ class ChatbotService
                 'name' => 'truck_sizes',
                 'priority' => 4,
                 'entity_bonus' => 2.0,
+                'entity_bonus_type' => 'truck',
                 'patterns' => [
                     ['phrase' => 'truck size', 'weight' => 5],
                     ['phrase' => 'truck capacity', 'weight' => 5],
@@ -657,6 +835,7 @@ class ChatbotService
                     ['phrase' => 'methods of payment', 'weight' => 5],
                     ['phrase' => 'accept payment', 'weight' => 4],
                     ['phrase' => 'payment', 'weight' => 3],
+                    ['phrase' => 'pay', 'weight' => 2],
                 ],
                 'reply' => fn () => "We accept two payment methods:\n- Mobile Money (MoMo) via MTN, Telecel, or AirtelTigo\n- Cash on Delivery (COD), where you pay the driver when your sand arrives\n\nMoMo payments are processed at the time of booking. No PIN is ever stored or transmitted through our app.",
                 'quick_replies' => [
@@ -689,6 +868,7 @@ class ChatbotService
                     ['phrase' => 'cod', 'weight' => 4],
                     ['phrase' => 'pay the driver', 'weight' => 5],
                     ['phrase' => 'pay driver', 'weight' => 5],
+                    ['phrase' => 'pay cash', 'weight' => 5],
                     ['phrase' => 'cash', 'weight' => 2],
                 ],
                 'reply' => fn () => "With Cash on Delivery:\n- No upfront payment is required\n- Pay the driver directly when your sand is delivered\n- Have the exact amount ready, as the driver may not have change\n- Your order total is confirmed at booking so there are no surprises",
@@ -701,8 +881,52 @@ class ChatbotService
                 'suggestion_message' => 'How does cash on delivery work?',
             ],
             [
-                'name' => 'order_status',
+                'name' => 'report_issue',
                 'priority' => 9,
+                'patterns' => [
+                    ['phrase' => 'report', 'weight' => 3],
+                    ['phrase' => 'issue', 'weight' => 3],
+                    ['phrase' => 'problem', 'weight' => 3],
+                    ['phrase' => 'complaint', 'weight' => 3],
+                    ['phrase' => 'complain', 'weight' => 3],
+                    ['phrase' => 'order', 'weight' => 1],
+                    ['phrase' => 'delivery', 'weight' => 1],
+                    ['phrase' => 'late', 'weight' => 3],
+                    ['phrase' => 'delayed', 'weight' => 3],
+                    ['phrase' => 'still waiting', 'weight' => 4],
+                    ['phrase' => 'taking too long', 'weight' => 4],
+                    ['phrase' => 'has not come', 'weight' => 4],
+                    ['phrase' => 'paid but', 'weight' => 5],
+                    ['phrase' => 'deducted', 'weight' => 3],
+                    ['phrase' => 'debited', 'weight' => 3],
+                    ['phrase' => 'no confirmation', 'weight' => 4],
+                    ['phrase' => 'money gone', 'weight' => 4],
+                    ['phrase' => 'payment failed', 'weight' => 4],
+                    ['phrase' => 'not enough', 'weight' => 4],
+                    ['phrase' => 'incomplete', 'weight' => 3],
+                    ['phrase' => 'wrong sand type', 'weight' => 8],
+                    ['phrase' => 'wrong sand', 'weight' => 6],
+                    ['phrase' => 'different sand', 'weight' => 6],
+                    ['phrase' => 'not what i ordered', 'weight' => 5],
+                    ['phrase' => 'damaged', 'weight' => 3],
+                    ['phrase' => 'spoiled', 'weight' => 3],
+                    ['phrase' => 'contaminated', 'weight' => 3],
+                    ['phrase' => 'dirty sand', 'weight' => 5],
+                    ['phrase' => 'rude', 'weight' => 3],
+                    ['phrase' => 'disrespectful', 'weight' => 3],
+                ],
+                'reply' => fn () => "To report an issue:\n1. Go to the Issues section in the app\n2. Select the type of issue (late delivery, wrong sand type, wrong quantity, damaged goods, payment issue, driver conduct, or other)\n3. Describe the problem in detail\n4. Optionally link the issue to a specific order\n\nOur team will review your report and respond as soon as possible.",
+                'quick_replies' => [
+                    ['label' => 'Track order', 'message' => 'How do I track my order?'],
+                    ['label' => 'Order history', 'message' => 'Where can I see my past orders?'],
+                    ['label' => 'Prices', 'message' => 'What are your prices?'],
+                ],
+                'suggestion_label' => 'Report issue',
+                'suggestion_message' => 'I want to report a problem',
+            ],
+            [
+                'name' => 'order_status',
+                'priority' => 10,
                 'patterns' => [
                     ['phrase' => 'where is my', 'weight' => 5],
                     ['phrase' => 'my order', 'weight' => 4],
@@ -712,6 +936,7 @@ class ChatbotService
                     ['phrase' => 'how far', 'weight' => 4],
                     ['phrase' => 'been dispatched', 'weight' => 4],
                     ['phrase' => 'status of my', 'weight' => 5],
+                    ['phrase' => 'on the way', 'weight' => 3],
                 ],
                 'reply' => fn (array $entities, ?User $u) => $this->buildOrderStatusReply($u),
                 'quick_replies' => [
@@ -723,8 +948,27 @@ class ChatbotService
                 'suggestion_message' => 'Where is my order?',
             ],
             [
+                'name' => 'order_cancellation',
+                'priority' => 11,
+                'patterns' => [
+                    ['phrase' => 'cancel my order', 'weight' => 6],
+                    ['phrase' => 'cancel order', 'weight' => 6],
+                    ['phrase' => 'cancel', 'weight' => 4],
+                    ['phrase' => 'how to cancel', 'weight' => 5],
+                    ['phrase' => 'want to cancel', 'weight' => 5],
+                ],
+                'reply' => fn () => 'You can cancel an order while it is still in the Confirmed stage. Go to the Orders section, open the order, and tap Cancel. Once a truck has been dispatched, cancellation is no longer available. If your order is already on the way and you need to cancel, please report an issue and our team will assist you.',
+                'quick_replies' => [
+                    ['label' => 'Order status', 'message' => 'Where is my order?'],
+                    ['label' => 'Report issue', 'message' => 'I want to report a problem'],
+                    ['label' => 'Order history', 'message' => 'Where can I see my past orders?'],
+                ],
+                'suggestion_label' => 'Cancel order',
+                'suggestion_message' => 'How do I cancel my order?',
+            ],
+            [
                 'name' => 'tracking',
-                'priority' => 10,
+                'priority' => 12,
                 'patterns' => [
                     ['phrase' => 'tracking stage', 'weight' => 5],
                     ['phrase' => 'tracking stages', 'weight' => 5],
@@ -745,7 +989,7 @@ class ChatbotService
             ],
             [
                 'name' => 'delivery_time',
-                'priority' => 11,
+                'priority' => 13,
                 'patterns' => [
                     ['phrase' => 'delivery time', 'weight' => 5],
                     ['phrase' => 'how long', 'weight' => 4],
@@ -767,8 +1011,29 @@ class ChatbotService
                 'suggestion_message' => 'How long does delivery take?',
             ],
             [
+                'name' => 'delivery_coverage',
+                'priority' => 14,
+                'patterns' => [
+                    ['phrase' => 'deliver to', 'weight' => 5],
+                    ['phrase' => 'delivery area', 'weight' => 5],
+                    ['phrase' => 'delivery region', 'weight' => 5],
+                    ['phrase' => 'which region', 'weight' => 4],
+                    ['phrase' => 'do you cover', 'weight' => 5],
+                    ['phrase' => 'where do you deliver', 'weight' => 5],
+                    ['phrase' => 'delivery', 'weight' => 2],
+                ],
+                'reply' => fn () => $this->buildDeliveryCoverageReply($this->lastTokens),
+                'quick_replies' => [
+                    ['label' => 'Prices', 'message' => 'What are your prices?'],
+                    ['label' => 'How to book', 'message' => 'How do I place an order?'],
+                    ['label' => 'Delivery time', 'message' => 'How long does delivery take?'],
+                ],
+                'suggestion_label' => 'Delivery areas',
+                'suggestion_message' => 'Where do you deliver?',
+            ],
+            [
                 'name' => 'order_history',
-                'priority' => 12,
+                'priority' => 15,
                 'patterns' => [
                     ['phrase' => 'order history', 'weight' => 5],
                     ['phrase' => 'past orders', 'weight' => 5],
@@ -790,23 +1055,27 @@ class ChatbotService
                 'suggestion_message' => 'Where can I see my past orders?',
             ],
             [
-                'name' => 'report_issue',
-                'priority' => 13,
+                'name' => 'human_handoff',
+                'priority' => 16,
                 'patterns' => [
-                    ['phrase' => 'report', 'weight' => 3],
-                    ['phrase' => 'issue', 'weight' => 3],
-                    ['phrase' => 'problem', 'weight' => 3],
-                    ['phrase' => 'complaint', 'weight' => 3],
-                    ['phrase' => 'complain', 'weight' => 3],
+                    ['phrase' => 'speak to someone', 'weight' => 5],
+                    ['phrase' => 'speak to a person', 'weight' => 5],
+                    ['phrase' => 'talk to someone', 'weight' => 5],
+                    ['phrase' => 'talk to a human', 'weight' => 5],
+                    ['phrase' => 'real person', 'weight' => 5],
+                    ['phrase' => 'customer service', 'weight' => 5],
+                    ['phrase' => 'contact', 'weight' => 3],
+                    ['phrase' => 'speak to', 'weight' => 4],
+                    ['phrase' => 'talk to', 'weight' => 4],
                 ],
-                'reply' => fn () => "To report an issue:\n1. Go to the Issues section in the app\n2. Select the type of issue (late delivery, wrong sand type, wrong quantity, damaged goods, payment issue, driver conduct, or other)\n3. Describe the problem in detail\n4. Optionally link the issue to a specific order\n\nOur team will review your report and respond as soon as possible.",
+                'reply' => fn () => 'We do not have a live chat agent at this time. However, you can report any issue through the Issues section of the app and our team will review and respond. Would you like to report an issue now?',
                 'quick_replies' => [
-                    ['label' => 'Track order', 'message' => 'How do I track my order?'],
-                    ['label' => 'Order history', 'message' => 'Where can I see my past orders?'],
-                    ['label' => 'Prices', 'message' => 'What are your prices?'],
+                    ['label' => 'Report issue', 'message' => 'I want to report a problem'],
+                    ['label' => 'Order status', 'message' => 'Where is my order?'],
+                    ['label' => 'How to book', 'message' => 'How do I place an order?'],
                 ],
-                'suggestion_label' => 'Report issue',
-                'suggestion_message' => 'I want to report a problem',
+                'suggestion_label' => 'Contact us',
+                'suggestion_message' => 'Can I speak to someone?',
             ],
         ];
     }
