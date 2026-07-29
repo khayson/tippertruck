@@ -31,7 +31,7 @@ Status codes: `200` ok · `201` created · `401` unauthenticated · `403` forbid
 → `201` `{ user, token }`
 
 ### POST /auth/login
-`email`, `password` → `200` `{ user, token }` · `401` on bad credentials · `429` after 5 attempts/min.
+`email`, `password` → `200` `{ user, token }` · `401` on bad credentials · `429` after 5 attempts/min per email+IP (and 20/min per IP). `429` responses include `Retry-After` and `X-RateLimit-*` headers.
 
 ### POST /auth/logout *(auth)*
 Revokes the current token. → `200`

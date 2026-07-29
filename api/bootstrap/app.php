@@ -60,7 +60,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Not found.',
                 'data' => null,
                 'errors' => null,
-            ], 404);
+            ], 404, $e->getHeaders());
         });
 
         $exceptions->render(function (HttpException $e, Request $request) {
@@ -73,7 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => $e->getMessage() ?: 'Error.',
                 'data' => null,
                 'errors' => null,
-            ], $e->getStatusCode());
+            ], $e->getStatusCode(), $e->getHeaders());
         });
 
         $exceptions->render(function (Throwable $e, Request $request) {

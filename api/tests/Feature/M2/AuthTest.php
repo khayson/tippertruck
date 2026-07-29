@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 
@@ -139,7 +142,7 @@ test('login returns 401 in envelope shape for wrong password', function () {
         ]);
 });
 
-test('login is throttled after 5 attempts', function () {
+test('login is throttled after 5 attempts and returns Retry-After', function () {
     User::factory()->create([
         'email' => 'user@example.com',
         'password' => 'Secret1234',
@@ -158,7 +161,27 @@ test('login is throttled after 5 attempts', function () {
     ]);
 
     $response->assertStatus(429)
-        ->assertJson(['success' => false]);
+        ->assertJson(['success' => false])
+        ->assertHeader('Retry-After');
+});
+
+test('two different emails from the same IP do not share a throttle bucket', function () {
+    User::factory()->create(['email' => 'a@example.com', 'password' => 'Secret1234']);
+    User::factory()->create(['email' => 'b@example.com', 'password' => 'Secret1234']);
+
+    for ($i = 0; $i < 5; $i++) {
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'a@example.com',
+            'password' => 'Wrong'.$i.'Pass',
+        ]);
+    }
+
+    $response = $this->postJson('/api/v1/auth/login', [
+        'email' => 'b@example.com',
+        'password' => 'Secret1234',
+    ]);
+
+    $response->assertStatus(200);
 });
 
 test('me returns the authenticated user', function () {
@@ -191,29 +214,74 @@ test('me without token returns 401 in envelope', function () {
         ]);
 });
 
-test('logout revokes the current token', function () {
+test('logout revokes only the current token', function () {
     $user = User::factory()->create([
         'email' => 'logout@example.com',
         'password' => 'Secret1234',
     ]);
 
-    $loginResponse = $this->postJson('/api/v1/auth/login', [
+    $loginA = $this->postJson('/api/v1/auth/login', [
         'email' => 'logout@example.com',
         'password' => 'Secret1234',
     ]);
-    $token = $loginResponse->json('data.token');
+    $tokenA = $loginA->json('data.token');
 
-    $this->withHeaders(['Authorization' => "Bearer $token"])
+    $loginB = $this->postJson('/api/v1/auth/login', [
+        'email' => 'logout@example.com',
+        'password' => 'Secret1234',
+    ]);
+    $tokenB = $loginB->json('data.token');
+
+    $this->withHeaders(['Authorization' => "Bearer $tokenA"])
         ->postJson('/api/v1/auth/logout')
         ->assertStatus(200)
-        ->assertJson([
-            'success' => true,
-            'message' => 'Logged out.',
-        ]);
+        ->assertJson(['success' => true, 'message' => 'Logged out.']);
 
     app('auth')->forgetGuards();
 
-    $this->withHeaders(['Authorization' => "Bearer $token"])
+    $this->withHeaders(['Authorization' => "Bearer $tokenA"])
         ->getJson('/api/v1/auth/me')
         ->assertStatus(401);
+
+    app('auth')->forgetGuards();
+
+    $this->withHeaders(['Authorization' => "Bearer $tokenB"])
+        ->getJson('/api/v1/auth/me')
+        ->assertStatus(200);
+});
+
+test('404 returns envelope shape', function () {
+    $response = $this->getJson('/api/v1/does-not-exist');
+
+    $response->assertStatus(404)
+        ->assertExactJson([
+            'success' => false,
+            'message' => 'Not found.',
+            'data' => null,
+            'errors' => null,
+        ]);
+});
+
+test('500 returns envelope shape with generic message when debug off', function () {
+    config(['app.debug' => false]);
+
+    Route::get('api/v1/test-500', fn () => throw new RuntimeException('Kaboom'));
+
+    $response = $this->getJson('/api/v1/test-500');
+
+    $response->assertStatus(500)
+        ->assertExactJson([
+            'success' => false,
+            'message' => 'Server error.',
+            'data' => null,
+            'errors' => null,
+        ]);
+});
+
+test('DUMMY_HASH is a valid 60-char bcrypt hash that rejects all passwords', function () {
+    $hash = AuthService::DUMMY_HASH;
+
+    expect(strlen($hash))->toBe(60);
+    expect(password_get_info($hash)['algoName'])->toBe('bcrypt');
+    expect(Hash::check('anything', $hash))->toBeFalse();
 });
