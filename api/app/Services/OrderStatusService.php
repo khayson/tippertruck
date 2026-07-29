@@ -22,28 +22,30 @@ class OrderStatusService
 
     public function transition(Order $order, OrderStatus $to, ?User $changedBy = null, ?string $note = null): Order
     {
-        $from = $order->status;
-        $allowed = self::TRANSITIONS[$from->value] ?? [];
+        return DB::transaction(function () use ($order, $to, $changedBy, $note) {
+            $locked = Order::lockForUpdate()->findOrFail($order->id);
+            $from = $locked->status;
 
-        if (! in_array($to->value, $allowed, true)) {
-            throw ValidationException::withMessages([
-                'status' => ["Cannot transition from {$from->label()} to {$to->label()}."],
-            ]);
-        }
+            $allowed = self::TRANSITIONS[$from->value] ?? [];
 
-        return DB::transaction(function () use ($order, $from, $to, $changedBy, $note) {
-            $order->status = $to;
+            if (! in_array($to->value, $allowed, true)) {
+                throw ValidationException::withMessages([
+                    'status' => ["Cannot transition from {$from->label()} to {$to->label()}."],
+                ]);
+            }
+
+            $locked->status = $to;
 
             match ($to) {
-                OrderStatus::OnTheWay => $order->dispatched_at = now(),
-                OrderStatus::Delivered => $order->delivered_at = now(),
+                OrderStatus::OnTheWay => $locked->dispatched_at = now(),
+                OrderStatus::Delivered => $locked->delivered_at = now(),
                 default => null,
             };
 
-            $order->save();
+            $locked->save();
 
             OrderStatusLog::create([
-                'order_id' => $order->id,
+                'order_id' => $locked->id,
                 'old_status' => $from,
                 'new_status' => $to,
                 'changed_by' => $changedBy?->id,
@@ -51,7 +53,7 @@ class OrderStatusService
                 'created_at' => now(),
             ]);
 
-            return $order->fresh();
+            return $locked->fresh();
         });
     }
 }

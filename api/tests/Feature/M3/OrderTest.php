@@ -92,6 +92,23 @@ test('order_ref is unique and correctly formatted', function () {
     expect($seq2)->toBe($seq1 + 1);
 });
 
+test('order_ref collision triggers retry and succeeds', function () {
+    $user = User::factory()->create();
+    $date = now()->format('Ymd');
+    $collidingRef = "TT-{$date}-0001";
+
+    Order::factory()->create([
+        'order_ref' => $collidingRef,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/orders', validOrderPayload());
+
+    $response->assertStatus(201);
+    $ref = $response->json('data.order.order_ref');
+    expect($ref)->toBe("TT-{$date}-0002");
+});
+
 // --- Status log on creation ---
 
 test('creating an order writes exactly one status log row', function () {
@@ -156,6 +173,23 @@ test('illegal transitions are rejected with 422', function (string $from, string
     ['on_the_way', 'confirmed'],
     ['delivered', 'cancelled'],
 ]);
+
+test('concurrent transition race is prevented by row lock', function () {
+    $user = User::factory()->create();
+    $order = Order::factory()->create(['user_id' => $user->id, 'status' => OrderStatus::Confirmed]);
+    $service = app(OrderStatusService::class);
+
+    $staleOrder = Order::find($order->id);
+
+    $service->transition($order, OrderStatus::Cancelled, $user, 'Cancel');
+
+    expect(fn () => $service->transition($staleOrder, OrderStatus::OnTheWay, $user, 'Dispatch'))
+        ->toThrow(ValidationException::class);
+
+    $fresh = Order::find($order->id);
+    expect($fresh->status)->toBe(OrderStatus::Cancelled);
+    expect($fresh->statusLogs)->toHaveCount(1);
+});
 
 // --- Authorization ---
 
@@ -297,6 +331,26 @@ test('orders list filters by status', function () {
 
     $response->assertStatus(200)
         ->assertJsonCount(2, 'data.orders');
+});
+
+test('orders list with invalid status returns 422', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->getJson('/api/v1/orders?status=bogus');
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['status']);
+});
+
+test('orders list with empty status returns all orders', function () {
+    $user = User::factory()->create();
+    Order::factory()->count(2)->create(['user_id' => $user->id, 'status' => OrderStatus::Confirmed]);
+    Order::factory()->create(['user_id' => $user->id, 'status' => OrderStatus::Delivered]);
+
+    $response = $this->actingAs($user)->getJson('/api/v1/orders?status=');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(3, 'data.orders');
 });
 
 test('order show includes status_log', function () {

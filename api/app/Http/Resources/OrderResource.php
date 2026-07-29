@@ -39,8 +39,8 @@ class OrderResource extends JsonResource
                 'delivery_note' => $this->delivery_note,
             ],
             'payment' => [
-                'method' => $this->payment_method?->value,
-                'status' => $this->payment_status?->value,
+                'method' => $this->payment_method->value,
+                'status' => $this->payment_status->value,
                 'network' => $this->momo_network?->value,
                 'momo_phone' => $this->maskPhone($this->momo_phone),
             ],

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\IndexOrderRequest;
 use App\Http\Requests\Api\V1\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Http\Traits\ApiResponse;
@@ -35,13 +36,13 @@ class OrderController extends Controller
         );
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(IndexOrderRequest $request): JsonResponse
     {
         $query = $request->user()->orders()
             ->with(['sandType', 'truckType'])
             ->latest();
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
 
