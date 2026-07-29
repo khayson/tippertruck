@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ChatbotController;
 use App\Http\Controllers\Api\V1\ConfigController;
+use App\Http\Controllers\Api\V1\IssueController;
 use App\Http\Controllers\Api\V1\OrderController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,5 +21,10 @@ Route::prefix('v1')->group(function () {
         Route::get('orders', [OrderController::class, 'index']);
         Route::get('orders/{order}', [OrderController::class, 'show']);
         Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
+
+        Route::post('issues', [IssueController::class, 'store']);
+        Route::get('issues', [IssueController::class, 'index']);
+
+        Route::post('chatbot/message', [ChatbotController::class, 'message']);
     });
 });
