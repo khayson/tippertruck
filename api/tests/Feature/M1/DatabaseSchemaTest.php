@@ -9,9 +9,11 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\UserRole;
+use App\Models\DeliveryZone;
 use App\Models\Issue;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
+use App\Models\SandTruckPrice;
 use App\Models\SandType;
 use App\Models\TruckType;
 use App\Models\User;
@@ -70,6 +72,20 @@ test('order_status_log table has the required columns', function () {
     expect(Schema::hasColumns('order_status_log', [
         'id', 'order_id', 'old_status', 'new_status',
         'changed_by', 'note', 'created_at',
+    ]))->toBeTrue();
+});
+
+test('sand_truck_prices table has the required columns', function () {
+    expect(Schema::hasColumns('sand_truck_prices', [
+        'id', 'sand_type_id', 'truck_type_id', 'price_ghs',
+        'created_at', 'updated_at',
+    ]))->toBeTrue();
+});
+
+test('delivery_zones table has the required columns', function () {
+    expect(Schema::hasColumns('delivery_zones', [
+        'id', 'region', 'surcharge_ghs', 'is_active',
+        'created_at', 'updated_at',
     ]))->toBeTrue();
 });
 
@@ -232,6 +248,8 @@ test('seeders run cleanly', function () {
 
     expect(SandType::count())->toBe(3);
     expect(TruckType::count())->toBe(3);
+    expect(SandTruckPrice::count())->toBe(9);
+    expect(DeliveryZone::count())->toBe(2);
     expect(User::count())->toBe(3);
     expect(Order::count())->toBe(8);
     expect(OrderStatusLog::count())->toBeGreaterThanOrEqual(8);
@@ -244,6 +262,8 @@ test('seeders run cleanly', function () {
 
     $large = TruckType::where('slug', 'large')->first();
     expect($large->capacity_tonnes_max)->toBeNull();
+
+    expect(DeliveryZone::where('is_active', true)->count())->toBe(2);
 });
 
 test('seeders run clean twice in a row', function () {
@@ -252,6 +272,8 @@ test('seeders run clean twice in a row', function () {
 
     expect(SandType::count())->toBe(3);
     expect(TruckType::count())->toBe(3);
+    expect(SandTruckPrice::count())->toBe(9);
+    expect(DeliveryZone::count())->toBe(2);
     expect(User::count())->toBe(3);
     expect(Order::count())->toBe(8);
 });

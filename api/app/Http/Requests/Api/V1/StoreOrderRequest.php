@@ -26,7 +26,7 @@ class StoreOrderRequest extends FormRequest
             'recipient_name' => ['required', 'string', 'max:255'],
             'recipient_phone' => ['required', 'string', 'regex:/^0\d{9}$/'],
             'street_address' => ['required', 'string', 'max:255'],
-            'region' => ['required', 'string', Rule::in(config('ghana.regions'))],
+            'region' => ['required', 'string', Rule::exists('delivery_zones', 'region')->where('is_active', true)],
             'city' => ['required', 'string', 'max:255'],
             'landmark' => ['nullable', 'string', 'max:255'],
             'delivery_note' => ['nullable', 'string', 'max:1000'],
@@ -49,6 +49,7 @@ class StoreOrderRequest extends FormRequest
             'pin.prohibited' => 'PIN must never be sent.',
             'price_ghs.prohibited' => 'Price is determined server-side.',
             'total_ghs.prohibited' => 'Total is determined server-side.',
+            'region.exists' => 'We do not currently deliver to this region.',
         ];
     }
 }

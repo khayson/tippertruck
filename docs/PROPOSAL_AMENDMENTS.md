@@ -186,6 +186,85 @@ The original scoring engine applied entity bonuses uniformly. This caused false 
 
 ---
 
+## 19. Sand × Truck price matrix
+
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+
+**Proposal said:** Single price per truck type.
+
+**Implementation:** A `sand_truck_prices` table stores the cross-product of 3 sand types × 3 truck types = 9 distinct base prices. `truck_types.price_ghs` is retained but deprecated.
+
+> Different sand types have different quarry costs, so a single truck-based price under-represents reality. A matrix lets the admin set granular pricing without code changes.
+
+---
+
+## 20. Delivery zones with regional surcharges
+
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+
+**Proposal said:** Free-text region field validated against a static list of all 16 Ghana regions.
+
+**Implementation:** A `delivery_zones` table with `region`, `surcharge_ghs`, and `is_active`. Only active zones are orderable. Initial scope: Greater Accra (surcharge GHS 0) and Central (surcharge GHS 400).
+
+> A startup cannot serve all 16 regions at launch. Delivery zones let the admin control service areas and apply distance-based surcharges without redeploying. The `is_active` flag enables gradual rollout.
+
+---
+
+## 21. Schema: 9 tables instead of 7
+
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+
+**Proposal said:** 7 tables. With `chatbot_unmatched_logs` (amendment 13) the count was 8; with `sand_truck_prices` and `delivery_zones` it is now 10. **The ERD must be redrawn.**
+
+---
+
+## 22. Data dictionary additions
+
+**Section:** §3.4.2 · **Status:** PENDING
+
+New columns / tables added to the data dictionary:
+
+| Table | Column | Type | Notes |
+|---|---|---|---|
+| `sand_truck_prices` | `id` | bigint PK | |
+| `sand_truck_prices` | `sand_type_id` | FK → sand_types | RESTRICT |
+| `sand_truck_prices` | `truck_type_id` | FK → truck_types | RESTRICT |
+| `sand_truck_prices` | `price_ghs` | decimal(10,2) | Base price for this combination |
+| `delivery_zones` | `id` | bigint PK | |
+| `delivery_zones` | `region` | string, unique | Ghana region name |
+| `delivery_zones` | `surcharge_ghs` | decimal(10,2) | Default 0 |
+| `delivery_zones` | `is_active` | boolean | Default true |
+
+---
+
+## 23. Delivery fee is now real
+
+**Section:** §3.4.2 · **Status:** PENDING
+
+**Proposal said:** `delivery_fee_ghs` existed on the order but was always 0.
+
+> `delivery_fee_ghs` is now the surcharge from the delivery zone, snapshotted at order creation. `total_ghs = price_ghs + delivery_fee_ghs`. Regional surcharges make delivery fees meaningful. The snapshot rule is unchanged — price at order time is final. Delivery is bundled into the trip price with a regional surcharge, not billed separately.
+
+---
+
+## 24. Pricing rationale and launch coverage
+
+**Section:** §3.4.2 · **Status:** PENDING
+
+Seed prices (GHS) for the initial deployment:
+
+| Sand Type | Small | Medium | Large |
+|---|---|---|---|
+| Filling Sand | 900 | 1,600 | 2,400 |
+| Quarry Sand | 1,100 | 1,900 | 2,800 |
+| River Sand | 1,300 | 2,300 | 3,100 |
+
+Surcharges: Greater Accra GHS 0, Central GHS 400.
+
+> Prices are based on typical Accra-area market rates for tipper truck sand delivery as of mid-2026. They are admin-editable via the Filament panel and the `sand_truck_prices` table. Launch coverage is Greater Accra and Central Region only; additional regions are activated by inserting rows into `delivery_zones` — no code change required.
+
+---
+
 ## Awaiting decision
 
-- Delivery fee: the schema carries `delivery_fee_ghs` but no pricing rule exists; currently always zero. Either define a rule or state in §1.4 that delivery is included in the truck price.
+*No outstanding items.*

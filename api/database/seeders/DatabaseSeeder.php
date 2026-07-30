@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SandTypeSeeder::class,
             TruckTypeSeeder::class,
+            SandTruckPriceSeeder::class,
+            DeliveryZoneSeeder::class,
             UserSeeder::class,
             OrderSeeder::class,
         ]);

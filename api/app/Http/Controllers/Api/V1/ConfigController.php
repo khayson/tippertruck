@@ -8,6 +8,8 @@ use App\Enums\IssueType;
 use App\Enums\MomoNetwork;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\DeliveryZone;
+use App\Models\SandTruckPrice;
 use App\Models\SandType;
 use App\Models\TruckType;
 use Illuminate\Http\JsonResponse;
@@ -27,15 +29,29 @@ class ConfigController extends Controller
             ->orderBy('sort_order')
             ->get(['id', 'name', 'slug', 'capacity_label', 'price_ghs', 'is_popular']);
 
+        $activeRegions = DeliveryZone::where('is_active', true)
+            ->orderBy('region')
+            ->pluck('region');
+
+        $deliveryZones = DeliveryZone::where('is_active', true)
+            ->orderBy('region')
+            ->get(['region', 'surcharge_ghs']);
+
+        $priceMatrix = SandTruckPrice::all(['sand_type_id', 'truck_type_id', 'price_ghs']);
+
         $latestUpdate = Carbon::parse(max(
             SandType::max('updated_at') ?? now(),
             TruckType::max('updated_at') ?? now(),
+            SandTruckPrice::max('updated_at') ?? now(),
+            DeliveryZone::max('updated_at') ?? now(),
         ));
 
         return $this->success([
             'sand_types' => $sandTypes,
             'truck_types' => $truckTypes,
-            'regions' => config('ghana.regions'),
+            'price_matrix' => $priceMatrix,
+            'delivery_zones' => $deliveryZones,
+            'regions' => $activeRegions,
             'issue_types' => collect(IssueType::cases())->map(fn (IssueType $t) => [
                 'value' => $t->value,
                 'label' => str_replace('_', ' ', ucfirst($t->value)),
