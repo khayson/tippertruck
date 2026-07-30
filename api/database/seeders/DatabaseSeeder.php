@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DeliveryZoneSeeder::class,
             UserSeeder::class,
             OrderSeeder::class,
+            IssueSeeder::class,
         ]);
     }
 }

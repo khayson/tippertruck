@@ -265,6 +265,26 @@ Surcharges: Greater Accra GHS 0, Central GHS 400.
 
 ---
 
+## 25. Dashboard widgets
+
+**Sections:** §3.3.5, §3.4.3 · **Status:** PENDING
+
+Not in the proposal. The admin panel includes a dashboard with operational overview widgets.
+
+> The administration panel opens to a dashboard showing four statistics — orders placed today, orders placed this week, total revenue this month (excluding cancelled orders), and the count of open support issues — followed by a bar chart plotting orders per day for the preceding fourteen days. These widgets require no configuration and update on each page load.
+
+---
+
+## 26. Operator-scoped panel access
+
+**Sections:** §3.3.5 (use case diagram), §3.4.3 · **Status:** PENDING
+
+Not in the proposal. Operators access the same Filament panel as administrators but with a restricted view.
+
+> Operators log in to the same `/admin` panel as administrators. An Eloquent query scope restricts their order list to orders where `assigned_operator_id` matches their user ID — this is enforced at the database query level, not by hiding UI elements. Resources for user management, issue management, and pricing configuration check the authenticated user's role and return HTTP 403 for non-admin users, making those pages both invisible in navigation and unreachable by direct URL.
+
+---
+
 ## Awaiting decision
 
 *No outstanding items.*

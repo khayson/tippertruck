@@ -86,7 +86,7 @@ class OrderSeeder extends Seeder
                 'momo_phone' => $isMomo ? '0241234567' : null,
                 'momo_network' => $isMomo ? MomoNetwork::Mtn : null,
                 'status' => $spec['status'],
-                'assigned_operator_id' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered], true) ? $operator->id : null,
+                'assigned_operator_id' => (in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered], true) || $i === 0) ? $operator->id : null,
                 'confirmed_at' => $createdAt,
                 'dispatched_at' => in_array($spec['status'], [OrderStatus::OnTheWay, OrderStatus::Delivered], true) ? $createdAt->copy()->addHours(2) : null,
                 'delivered_at' => $spec['status'] === OrderStatus::Delivered ? $createdAt->copy()->addHours(5) : null,
