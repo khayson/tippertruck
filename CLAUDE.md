@@ -21,6 +21,7 @@ docs/     BUILD_SPEC.md (architecture) · API_CONTRACT.md (the contract)
 - **This is a public repository.** No real names, phone numbers, MoMo numbers or addresses in seeders, tests, fixtures or screenshots — generate fakes. No `.env`, no credentials, no API keys, ever. Not in a commit you plan to amend either; the object stays in history.
 - **Commits are scoped to one side** where possible: `feat(api): ...`, `fix(mobile): ...`, `docs: ...`, `chore: ...`. Contract changes use `feat(api,mobile): ...`.
 - Never commit directly to `main`. Branch as `m3/orders-endpoint`, open a PR, let CI pass.
+- **Proposal amendments.** Any decision that differs from the project proposal gets an entry in `docs/PROPOSAL_AMENDMENTS.md` in the SAME commit as the code — never "later". Each entry names the proposal section, what it currently says, the replacement wording, and why. Gate reports must state whether an amendment entry was added, or why none was needed.
 
 ## Commands
 

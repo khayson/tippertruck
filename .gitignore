@@ -65,6 +65,11 @@ auth.json
 /mobile/ios/Runner/GeneratedPluginRegistrant.*
 /mobile/**/*.g.dart.bak
 
+# ── Proposal document — contains student index numbers ───────
+*.docx
+*.doc
+TipperTruck_Proposal*
+
 # ── Build output / artefacts ──────────────────────────────────
 *.apk
 *.aab
