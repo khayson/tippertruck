@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
+use App\Models\SandType;
 use App\Models\TruckType;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -18,24 +19,30 @@ class OrderService
 {
     private const MAX_REF_RETRIES = 3;
 
+    public function __construct(
+        private readonly PricingService $pricingService,
+    ) {}
+
     public function create(array $data, User $user): Order
     {
+        $sandType = SandType::findOrFail($data['sand_type_id']);
         $truckType = TruckType::findOrFail($data['truck_type_id']);
-        $price = $truckType->price_ghs;
+
+        $quote = $this->pricingService->quote($sandType, $truckType, $data['region']);
 
         $attempts = 0;
 
         while (true) {
             try {
-                return DB::transaction(function () use ($data, $user, $price) {
+                return DB::transaction(function () use ($data, $user, $quote) {
                     $order = Order::create([
                         'order_ref' => $this->generateOrderRef(),
                         'user_id' => $user->id,
                         'sand_type_id' => $data['sand_type_id'],
                         'truck_type_id' => $data['truck_type_id'],
-                        'price_ghs' => $price,
-                        'delivery_fee_ghs' => 0,
-                        'total_ghs' => $price,
+                        'price_ghs' => $quote['price_ghs'],
+                        'delivery_fee_ghs' => $quote['delivery_fee_ghs'],
+                        'total_ghs' => $quote['total_ghs'],
                         'recipient_name' => $data['recipient_name'],
                         'recipient_phone' => $data['recipient_phone'],
                         'street_address' => $data['street_address'],

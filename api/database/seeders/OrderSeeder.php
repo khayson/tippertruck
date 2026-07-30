@@ -10,6 +10,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
+use App\Models\SandTruckPrice;
 use App\Models\SandType;
 use App\Models\TruckType;
 use App\Models\User;
@@ -47,26 +48,35 @@ class OrderSeeder extends Seeder
             ['status' => OrderStatus::Cancelled, 'sand' => 1, 'truck' => 0, 'payment' => PaymentMethod::Cod],
         ];
 
-        $regions = ['Greater Accra', 'Ashanti', 'Central'];
-        $cities = ['Accra', 'Kumasi', 'Cape Coast'];
+        $regions = ['Greater Accra', 'Central', 'Greater Accra'];
+        $cities = ['Accra', 'Cape Coast', 'Tema'];
 
         foreach ($orders as $i => $spec) {
-            $truck = $truckTypes[$spec['truck']];
+            $sandType = $sandTypes[$spec['sand']];
+            $truckType = $truckTypes[$spec['truck']];
+            $region = $regions[$i % 3];
             $isMomo = $spec['payment'] === PaymentMethod::Momo;
             $createdAt = now()->subDays(7 - $i)->subHours(rand(1, 12));
+
+            $matrixPrice = SandTruckPrice::where('sand_type_id', $sandType->id)
+                ->where('truck_type_id', $truckType->id)
+                ->first();
+
+            $basePrice = $matrixPrice ? (float) $matrixPrice->price_ghs : 0;
+            $surcharge = $region === 'Central' ? 400.00 : 0.00;
 
             $order = Order::create([
                 'order_ref' => sprintf('TT-%s-%04d', $createdAt->format('Ymd'), $i + 1),
                 'user_id' => $client->id,
-                'sand_type_id' => $sandTypes[$spec['sand']]->id,
-                'truck_type_id' => $truck->id,
-                'price_ghs' => $truck->price_ghs,
-                'delivery_fee_ghs' => 0,
-                'total_ghs' => $truck->price_ghs,
+                'sand_type_id' => $sandType->id,
+                'truck_type_id' => $truckType->id,
+                'price_ghs' => $basePrice,
+                'delivery_fee_ghs' => $surcharge,
+                'total_ghs' => $basePrice + $surcharge,
                 'recipient_name' => 'Kofi Mensah',
                 'recipient_phone' => '0241234567',
                 'street_address' => 'No. '.($i + 1).' Demo Street',
-                'region' => $regions[$i % 3],
+                'region' => $region,
                 'city' => $cities[$i % 3],
                 'landmark' => $i % 2 === 0 ? 'Near the market' : null,
                 'delivery_note' => $i % 3 === 0 ? 'Call on arrival' : null,

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\SandTruckPrice;
 use App\Models\SandType;
 use App\Models\TruckType;
 use App\Models\User;
 use App\Services\OrderStatusService;
+use Database\Seeders\DeliveryZoneSeeder;
+use Database\Seeders\SandTruckPriceSeeder;
 use Database\Seeders\SandTypeSeeder;
 use Database\Seeders\TruckTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,28 +39,38 @@ beforeEach(function () {
     $this->seed([
         SandTypeSeeder::class,
         TruckTypeSeeder::class,
+        SandTruckPriceSeeder::class,
+        DeliveryZoneSeeder::class,
     ]);
 });
 
 // --- Price snapshotting ---
 
-test('order snapshots the truck price at creation time', function () {
+test('order snapshots the matrix price at creation time', function () {
     $user = User::factory()->create();
-    $truck = TruckType::where('slug', 'medium')->first();
+    $sand = SandType::first();
+    $truck = TruckType::first();
+
+    $matrixPrice = SandTruckPrice::where('sand_type_id', $sand->id)
+        ->where('truck_type_id', $truck->id)
+        ->first();
+    $expectedPrice = $matrixPrice->price_ghs;
 
     $response = $this->actingAs($user)->postJson('/api/v1/orders', validOrderPayload([
+        'sand_type_id' => $sand->id,
         'truck_type_id' => $truck->id,
     ]));
 
     $response->assertStatus(201);
-    expect($response->json('data.order.price_ghs'))->toBe('450.00');
-    expect($response->json('data.order.total_ghs'))->toBe('450.00');
+    expect($response->json('data.order.price_ghs'))->toBe($expectedPrice);
+    expect($response->json('data.order.delivery_fee_ghs'))->toBe('0.00');
+    expect($response->json('data.order.total_ghs'))->toBe($expectedPrice);
 
-    $truck->update(['price_ghs' => 500]);
+    $matrixPrice->update(['price_ghs' => 99999.00]);
 
     $order = Order::first();
-    expect($order->price_ghs)->toBe('450.00');
-    expect($order->total_ghs)->toBe('450.00');
+    expect($order->price_ghs)->toBe($expectedPrice);
+    expect($order->total_ghs)->toBe($expectedPrice);
 });
 
 test('client-supplied price and total are rejected', function () {

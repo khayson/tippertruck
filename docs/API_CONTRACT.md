@@ -54,7 +54,10 @@ Public. Everything the app needs to render the booking flow.
   "truck_types": [ { "id":2, "name":"Medium Truck", "slug":"medium",
                      "capacity_label":"4–7 tonnes", "price_ghs":"450.00",
                      "is_popular":true } ],
-  "regions": ["Greater Accra", "Ashanti", "..."],
+  "price_matrix": [ { "sand_type_id":1, "truck_type_id":2, "price_ghs":"2300.00" } ],
+  "delivery_zones": [ { "region":"Greater Accra", "surcharge_ghs":"0.00" },
+                      { "region":"Central", "surcharge_ghs":"400.00" } ],
+  "regions": ["Central", "Greater Accra"],
   "issue_types": [ { "value":"late_delivery", "label":"Late delivery" } ],
   "payment_networks": [ { "value":"mtn", "label":"MTN MoMo" },
                         { "value":"telecel", "label":"Telecel Cash" },
@@ -62,7 +65,7 @@ Public. Everything the app needs to render the booking flow.
   "config_version": "2026-07-28T10:00:00Z" }
 ```
 
-Only `is_active` rows, ordered by `sort_order`. The app caches this and refreshes on launch; `config_version` lets it skip a rebuild when unchanged.
+Only `is_active` rows, ordered by `sort_order`. `regions` contains only regions with an active `delivery_zones` row — ordering to any other region returns `422`. `price_matrix` is the full cross-product of sand type × truck type base prices; the client computes `total = price_matrix[sand][truck] + delivery_zones[region].surcharge_ghs` for preview, but the server is authoritative. `truck_types.price_ghs` is deprecated and will be removed in a future version. The app caches this and refreshes on launch; `config_version` lets it skip a rebuild when unchanged.
 
 ---
 
@@ -77,7 +80,7 @@ Only `is_active` rows, ordered by `sort_order`. The app caches this and refreshe
   "payment_method": "momo",
   "momo_name": "Kwame Asante", "momo_phone": "0241234567", "momo_network": "mtn" }
 ```
-Server-side rules: `recipient_phone` and `momo_phone` — 10 digits, must start with `0`. MoMo fields required only when `payment_method = momo`. **Price is never accepted from the client** — the server reads `truck_types.price_ghs` and snapshots it onto the order. `order_ref` generated server-side.
+Server-side rules: `recipient_phone` and `momo_phone` — 10 digits, must start with `0`. MoMo fields required only when `payment_method = momo`. `region` must be an active delivery zone — unserved regions return `422`. **Price is never accepted from the client** — the server reads the price from `sand_truck_prices` (base) + `delivery_zones` (surcharge) and snapshots `price_ghs`, `delivery_fee_ghs`, `total_ghs` onto the order. `order_ref` generated server-side.
 
 → `201` `{ order }`
 
@@ -95,7 +98,7 @@ Client may cancel only while `confirmed`. → `200` with updated order, or `422`
 { "id": 12, "order_ref": "TT-20260728-0042",
   "sand_type": { "id":1, "name":"River Sand" },
   "truck_type": { "id":2, "name":"Medium Truck", "capacity_label":"4–7 tonnes" },
-  "price_ghs":"450.00", "delivery_fee_ghs":"0.00", "total_ghs":"450.00",
+  "price_ghs":"2300.00", "delivery_fee_ghs":"400.00", "total_ghs":"2700.00",
   "status":"on_the_way", "status_label":"On The Way", "progress_percent": 66,
   "delivery": { "recipient_name":"...", "recipient_phone":"...", "street_address":"...",
                 "region":"...", "city":"...", "landmark":null, "delivery_note":null },
