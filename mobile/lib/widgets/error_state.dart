@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../config/app_theme.dart';
 import 'app_button.dart';
 
 class ErrorState extends StatelessWidget {
@@ -16,13 +17,17 @@ class ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: const Color(0xFFB3261E).withValues(alpha: 0.7),
+            ),
             const SizedBox(height: 16),
             Text(
               message,
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade700),
+              ).textTheme.bodyLarge?.copyWith(color: AppTheme.ink),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -30,7 +35,7 @@ class ErrorState extends StatelessWidget {
               SizedBox(
                 width: 160,
                 child: AppButton(
-                  label: 'Try Again',
+                  label: 'Try again',
                   onPressed: onRetry,
                   outlined: true,
                 ),

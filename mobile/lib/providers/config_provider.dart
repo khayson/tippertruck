@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show ChangeNotifier;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
@@ -42,7 +42,7 @@ class ConfigProvider extends ChangeNotifier {
       if (_config == null) {
         _error = e.message;
       }
-    } catch (_) {
+    } catch (e) {
       await _loadFromCache();
       if (_config == null) {
         _error = 'Failed to load configuration.';

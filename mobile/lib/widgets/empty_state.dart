@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../config/app_theme.dart';
+
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -20,22 +22,22 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: Colors.grey.shade400),
+            Icon(icon, size: 64, color: AppTheme.slate.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text(
               title,
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey.shade600),
+              ).textTheme.titleMedium?.copyWith(color: AppTheme.slate),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade500),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.slate.withValues(alpha: 0.75),
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
