@@ -12,6 +12,7 @@ use App\Models\DeliveryZone;
 use App\Models\SandTruckPrice;
 use App\Models\SandType;
 use App\Models\TruckType;
+use App\Services\SocialAuth\SocialAuthManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 
@@ -19,11 +20,21 @@ class ConfigController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(private readonly SocialAuthManager $socialAuth) {}
+
     public function __invoke(): JsonResponse
     {
         $sandTypes = SandType::where('is_active', true)
             ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug', 'description', 'icon']);
+            ->get(['id', 'name', 'slug', 'description', 'icon', 'image'])
+            ->map(fn (SandType $sand): array => [
+                'id' => $sand->id,
+                'name' => $sand->name,
+                'slug' => $sand->slug,
+                'description' => $sand->description,
+                'icon' => $sand->icon,
+                'image_url' => $sand->imageUrl(),
+            ]);
 
         $truckTypes = TruckType::where('is_active', true)
             ->orderBy('sort_order')
@@ -61,6 +72,7 @@ class ConfigController extends Controller
                 ['value' => MomoNetwork::Telecel->value, 'label' => 'Telecel Cash'],
                 ['value' => MomoNetwork::AirtelTigo->value, 'label' => 'AirtelTigo Money'],
             ],
+            'social_auth' => $this->socialAuth->configPayload(),
             'config_version' => $latestUpdate->toISOString(),
         ]);
     }

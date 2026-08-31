@@ -16,15 +16,24 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    // Guard against accidental JsonResource wrapping: { "data": { ...user } }
+    final map = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
+
     return User(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      phone: json['phone'] as String?,
-      role: json['role'] as String,
-      createdAt: json['created_at'] as String,
+      id: map['id'] as int,
+      name: map['name'] as String,
+      email: map['email'] as String,
+      phone: map['phone'] as String?,
+      role: (map['role'] as String?) ?? 'client',
+      createdAt: map['created_at'] as String? ?? '',
     );
   }
+
+  bool get isClient => role == 'client';
+  bool get isOperator => role == 'operator';
+  bool get isAdmin => role == 'admin';
 
   String get firstName => name.split(' ').first;
 }

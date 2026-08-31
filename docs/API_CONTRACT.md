@@ -33,6 +33,11 @@ Status codes: `200` ok · `201` created · `401` unauthenticated · `403` forbid
 ### POST /auth/login
 `email`, `password` → `200` `{ user, token }` · `401` on bad credentials · `429` after 5 attempts/min per email+IP (and 20/min per IP). `429` responses include `Retry-After` and `X-RateLimit-*` headers.
 
+### POST /auth/social
+`provider` (`google`|`facebook`), `id_token` → `200` `{ user, token }` (same shape as login) · `401` invalid/expired token · `422` unknown provider · `429` after 5 attempts/min per IP (and 20/min per IP).
+
+When `GET /config` reports `social_auth.mode` as `real`, `id_token` is a provider ID token / access token verified against configured OAuth credentials. When mode is `simulated`, `id_token` is an HMAC-SHA256 signed demo payload (see implementation); used for local and FYP demos without third-party developer apps. Apple Sign In is not in v1.
+
 ### POST /auth/logout *(auth)*
 Revokes the current token. → `200`
 
@@ -50,7 +55,8 @@ Public. Everything the app needs to render the booking flow.
 
 ```json
 { "sand_types": [ { "id":1, "name":"River Sand", "slug":"river-sand",
-                    "description":"...", "icon":"wave" } ],
+                    "description":"...", "icon":"wave",
+                    "image_url":"http://localhost:8000/storage/sand-types/river.jpg" } ],
   "truck_types": [ { "id":2, "name":"Medium Truck", "slug":"medium",
                      "capacity_label":"4–7 tonnes", "price_ghs":"450.00",
                      "is_popular":true } ],
@@ -62,10 +68,13 @@ Public. Everything the app needs to render the booking flow.
   "payment_networks": [ { "value":"mtn", "label":"MTN MoMo" },
                         { "value":"telecel", "label":"Telecel Cash" },
                         { "value":"airteltigo", "label":"AirtelTigo Money" } ],
+  "social_auth": { "mode": "simulated", "providers": ["google", "facebook"] },
   "config_version": "2026-07-28T10:00:00Z" }
 ```
 
-Only `is_active` rows, ordered by `sort_order`. `regions` contains only regions with an active `delivery_zones` row — ordering to any other region returns `422`. `price_matrix` is the full cross-product of sand type × truck type base prices; the client computes `total = price_matrix[sand][truck] + delivery_zones[region].surcharge_ghs` for preview, but the server is authoritative. `truck_types.price_ghs` is deprecated and will be removed in a future version. The app caches this and refreshes on launch; `config_version` lets it skip a rebuild when unchanged.
+`social_auth.mode` is the effective mode the client must use (`simulated` or `real`). `providers` lists enabled social providers for the login/register screens.
+
+Only `is_active` rows, ordered by `sort_order`. `sand_types.image_url` is an absolute public URL when the admin has uploaded an image in Filament, otherwise `null` (the app falls back to bundled assets). `regions` contains only regions with an active `delivery_zones` row — ordering to any other region returns `422`. `price_matrix` is the full cross-product of sand type × truck type base prices; the client computes `total = price_matrix[sand][truck] + delivery_zones[region].surcharge_ghs` for preview, but the server is authoritative. `truck_types.price_ghs` is deprecated and will be removed in a future version. The app caches this and refreshes on launch; `config_version` lets it skip a rebuild when unchanged.
 
 ---
 
@@ -80,7 +89,7 @@ Only `is_active` rows, ordered by `sort_order`. `regions` contains only regions 
   "payment_method": "momo",
   "momo_name": "Kwame Asante", "momo_phone": "0241234567", "momo_network": "mtn" }
 ```
-Server-side rules: `recipient_phone` and `momo_phone` — 10 digits, must start with `0`. MoMo fields required only when `payment_method = momo`. `region` must be an active delivery zone — unserved regions return `422`. **Price is never accepted from the client** — the server reads the price from `sand_truck_prices` (base) + `delivery_zones` (surcharge) and snapshots `price_ghs`, `delivery_fee_ghs`, `total_ghs` onto the order. `order_ref` generated server-side.
+Server-side rules: `recipient_phone` and `momo_phone` — 10 digits, must start with `0`. MoMo fields required only when `payment_method = momo`. `region` must be an active delivery zone — unserved regions return `422`. **Price is never accepted from the client** — the server reads the price from `sand_truck_prices` (base) + `delivery_zones` (surcharge) and snapshots `price_ghs`, `delivery_fee_ghs`, `total_ghs` onto the order. `order_ref` generated server-side. **Payment status:** MoMo is charged through the payment gateway at create time (`paid` on success, order not created on failure). COD stays `pending` until the order is marked delivered, then becomes `paid`.
 
 → `201` `{ order }`
 
@@ -109,6 +118,24 @@ Client may cancel only while `confirmed`. → `200` with updated order, or `422`
 ```
 
 `status_label` and `progress_percent` are computed server-side so the app never owns that mapping (`confirmed` 33, `on_the_way` 66, `delivered` 100, `cancelled` 0). MoMo phone is masked on output.
+
+---
+
+## Operator (driver)
+
+Authenticated routes for users with `role = operator`. Clients and admins receive `403`. All status writes go through `OrderStatusService` (same state machine as Filament).
+
+### GET /operator/orders *(auth, operator)*
+Orders where `assigned_operator_id` is the current user, newest first. `?status=` optional filter. Paginated (15/page), pagination meta in `data.meta`. Shape matches `GET /orders` (`data.orders` + `data.meta`).
+
+### GET /operator/orders/{id} *(auth, operator)*
+Assigned order detail plus `status_log`. Not assigned → `403` (never `404`-as-cover).
+
+### POST /operator/orders/{id}/dispatch *(auth, operator)*
+`confirmed` → `on_the_way`. → `200` `{ order }` · `422` illegal transition · `403` if not assigned.
+
+### POST /operator/orders/{id}/deliver *(auth, operator)*
+`on_the_way` → `delivered`. → `200` `{ order }` · `422` illegal transition · `403` if not assigned.
 
 ---
 
@@ -171,4 +198,4 @@ Sixteen rules: greeting, pricing, sand types, truck sizes, how to book, payment 
 
 ## Admin
 
-No public admin API in v1 — administration is the Filament panel at `/admin`, session-authenticated, restricted to `role in (admin, operator)`. Operators see only orders assigned to them.
+Administration is the Filament panel at `/admin`, session-authenticated, restricted to `role = admin` (and optionally `operator` as a web fallback). Primary operator/driver workflow is the Flutter driver home via the Operator API above — not a separate public admin REST API.

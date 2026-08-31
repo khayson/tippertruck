@@ -1,183 +1,252 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../config/app_theme.dart';
 import '../../config/routes.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/tipper_silhouette.dart';
+
+/// Soft warm sand — tipper-flavoured stand-in for the reference sage wash.
+const Color _welcomeWash = Color(0xFFD4C8B8);
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Full-bleed background
-          CustomPaint(
-            painter: _WelcomeBackgroundPainter(),
-            size: Size.infinite,
-          ),
+    final size = MediaQuery.of(context).size;
 
-          // Dark gradient anchoring text to bottom
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.35, 0.6, 1.0],
-                  colors: [
-                    Colors.transparent,
-                    Colors.transparent,
-                    AppTheme.ink.withValues(alpha: 0.55),
-                    AppTheme.ink.withValues(alpha: 0.95),
+    return Scaffold(
+      backgroundColor: _welcomeWash,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 5,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _StripeBackdropPainter(),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: size.height * 0.02),
+                      child: Image.asset(
+                        'assets/images/tipper_hero.png',
+                        width: size.width * 0.92,
+                        height: size.height * 0.38,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => TipperSilhouette(
+                          size: size.width * 0.7,
+                          color: AppTheme.ink.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ),
-
-          // Hero image — centered in the upper portion
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.12,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Image.asset(
-                'assets/images/tipper_hero.png',
-                width: 320,
-                height: 320,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => TipperSilhouette(
-                  size: 260,
-                  color: Colors.white.withValues(alpha: 0.9),
+              Expanded(
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Spacer(flex: 1),
+                    const _WelcomeHeadline(),
+                    const Spacer(flex: 3),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            label: 'Login',
+                            outlined: true,
+                            dark: true,
+                            large: true,
+                            onPressed: () => context.go(AppRoutes.login),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AppButton(
+                            label: 'Get Started',
+                            dark: true,
+                            large: true,
+                            onPressed: () => context.go(AppRoutes.register),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Rotates daily so returning users see fresh, motivating copy.
+class _WelcomeCopy {
+  const _WelcomeCopy({
+    required this.before,
+    required this.accent,
+    required this.after,
+  });
+
+  final String before;
+  final String accent;
+  final String after;
+
+  static const List<_WelcomeCopy> pool = [
+    _WelcomeCopy(
+      before: 'Skip the quarry\nqueue — ',
+      accent: 'order sand',
+      after: '\nin minutes.',
+    ),
+    _WelcomeCopy(
+      before: 'Book a tipper,\n',
+      accent: 'track',
+      after: ' every\nload to your site.',
+    ),
+    _WelcomeCopy(
+      before: 'One fair price.\n',
+      accent: 'Delivered',
+      after: '\nstraight to your build.',
+    ),
+    _WelcomeCopy(
+      before: 'Your next pour\nstarts with one\n',
+      accent: 'tap',
+      after: '.',
+    ),
+    _WelcomeCopy(
+      before: 'From phone to\nsite — sand\n',
+      accent: 'when you need it',
+      after: '.',
+    ),
+    _WelcomeCopy(
+      before: 'Build without\nthe haggling.\n',
+      accent: 'Order today',
+      after: '.',
+    ),
+    _WelcomeCopy(
+      before: 'Reliable loads\nfor every site —\n',
+      accent: 'book yours',
+      after: ' now.',
+    ),
+  ];
+
+  static _WelcomeCopy forToday([DateTime? now]) {
+    final date = now ?? DateTime.now();
+    final dayOfYear = date.difference(DateTime(date.year)).inDays;
+    return pool[dayOfYear % pool.length];
+  }
+}
+
+class _WelcomeHeadline extends StatelessWidget {
+  const _WelcomeHeadline();
+
+  @override
+  Widget build(BuildContext context) {
+    final copy = _WelcomeCopy.forToday();
+    final base = GoogleFonts.archivoBlack(
+      fontSize: 32,
+      height: 1.18,
+      letterSpacing: -0.6,
+      color: AppTheme.ink,
+    );
+
+    final accentPainter = TextPainter(
+      text: TextSpan(text: copy.accent, style: base),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+
+    return Text.rich(
+      TextSpan(
+        style: base,
+        children: [
+          TextSpan(text: copy.before),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(copy.accent, style: base),
+                CustomPaint(
+                  size: Size(accentPainter.width, 8),
+                  painter: _AccentUnderlinePainter(),
+                ),
+              ],
             ),
           ),
-
-          // Bottom content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                children: [
-                  const Spacer(),
-
-                  // Headline
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'SAND,\nDELIVERED.',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: Colors.white,
-                        fontSize: 44,
-                        fontWeight: FontWeight.w700,
-                        height: 1.05,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'One price. No haggling\nat the gate.',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        height: 1.45,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Primary CTA
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () => context.go(AppRoutes.register),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppTheme.ink,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      child: const Text('Get Started'),
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // Secondary link
-                  TextButton(
-                    onPressed: () => context.go(AppRoutes.login),
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 48),
-                    ),
-                    child: Text(
-                      'I have an account',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
+          TextSpan(text: copy.after),
         ],
       ),
     );
   }
 }
 
-class _WelcomeBackgroundPainter extends CustomPainter {
+class _AccentUnderlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Warm amber-to-laterite gradient base
-    final bgPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [AppTheme.tipperAmber, AppTheme.tipperAmber, AppTheme.laterite],
-      ).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, bgPaint);
+    final paint = Paint()
+      ..color = AppTheme.tipperAmber
+      ..strokeWidth = 3.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
 
-    // Stippled sand grain texture over the entire surface
-    final rng = Random(42);
-    final grainPaint = Paint()..style = PaintingStyle.fill;
+    final path = Path()
+      ..moveTo(0, size.height * 0.55)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        size.height * 1.2,
+        size.width,
+        size.height * 0.35,
+      );
+    canvas.drawPath(path, paint);
+  }
 
-    for (var i = 0; i < 600; i++) {
-      final x = rng.nextDouble() * size.width;
-      final y = rng.nextDouble() * size.height;
-      final r = 0.5 + rng.nextDouble() * 2.0;
-      final alpha = 0.05 + rng.nextDouble() * 0.12;
-      grainPaint.color = Colors.white.withValues(alpha: alpha);
-      canvas.drawCircle(Offset(x, y), r, grainPaint);
-    }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
-    // Dark grain specks for depth
-    for (var i = 0; i < 300; i++) {
-      final x = rng.nextDouble() * size.width;
-      final y = rng.nextDouble() * size.height;
-      final r = 0.4 + rng.nextDouble() * 1.2;
-      final alpha = 0.05 + rng.nextDouble() * 0.08;
-      grainPaint.color = AppTheme.ink.withValues(alpha: alpha);
-      canvas.drawCircle(Offset(x, y), r, grainPaint);
+class _StripeBackdropPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..style = PaintingStyle.fill;
+    final stripeWidth = size.width * 0.14;
+    final gap = size.width * 0.06;
+    final startX = size.width * 0.28;
+    final top = size.height * 0.05;
+    final height = size.height * 0.85;
+    final colors = [
+      AppTheme.laterite.withValues(alpha: 0.18),
+      AppTheme.ink.withValues(alpha: 0.10),
+      AppTheme.laterite.withValues(alpha: 0.14),
+    ];
+
+    for (var i = 0; i < 3; i++) {
+      final x = startX + i * (stripeWidth + gap);
+      paint.color = colors[i];
+      final rect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(x, top, stripeWidth, height),
+        const Radius.circular(18),
+      );
+      canvas.save();
+      canvas.translate(x + stripeWidth / 2, top + height / 2);
+      canvas.rotate(0.08);
+      canvas.translate(-(x + stripeWidth / 2), -(top + height / 2));
+      canvas.drawRRect(rect, paint);
+      canvas.restore();
     }
   }
 

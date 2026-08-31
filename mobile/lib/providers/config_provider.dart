@@ -24,7 +24,8 @@ class ConfigProvider extends ChangeNotifier {
   bool get fromCache => _fromCache;
   String? get error => _error;
 
-  Future<void> load() async {
+  Future<void> load({bool force = false}) async {
+    if (_loading && !force) return;
     _loading = true;
     _error = null;
     notifyListeners();

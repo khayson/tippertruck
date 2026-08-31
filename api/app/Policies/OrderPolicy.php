@@ -18,6 +18,24 @@ class OrderPolicy
             || ($user->role === UserRole::Operator && $order->assigned_operator_id === $user->id);
     }
 
+    public function viewAsOperator(User $user, Order $order): bool
+    {
+        return $user->role === UserRole::Operator
+            && $order->assigned_operator_id === $user->id;
+    }
+
+    public function dispatch(User $user, Order $order): bool
+    {
+        return $this->viewAsOperator($user, $order)
+            && $order->status === OrderStatus::Confirmed;
+    }
+
+    public function deliver(User $user, Order $order): bool
+    {
+        return $this->viewAsOperator($user, $order)
+            && $order->status === OrderStatus::OnTheWay;
+    }
+
     public function cancel(User $user, Order $order): bool
     {
         if ($user->role === UserRole::Admin) {

@@ -140,7 +140,7 @@ class AppTheme {
               ),
               textStyle: _publicSans(
                 size: 16,
-                weight: FontWeight.w600,
+                weight: FontWeight.w700,
                 color: Colors.white,
               ),
             ).copyWith(
@@ -162,7 +162,7 @@ class AppTheme {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              textStyle: _publicSans(size: 16, weight: FontWeight.w600),
+              textStyle: _publicSans(size: 16, weight: FontWeight.w700),
             ).copyWith(
               foregroundColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.pressed)) return laterite;
