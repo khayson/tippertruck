@@ -54,9 +54,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? _validateLocally() {
-    if (_nameController.text.trim().isEmpty) return 'Please enter your name.';
-    if (_emailController.text.trim().isEmpty) return 'Please enter your email.';
-    if (_passwordController.text.isEmpty) return 'Please enter a password.';
+    if (_nameController.text.trim().isEmpty) return 'Enter your full name.';
+    if (_emailController.text.trim().isEmpty) return 'Enter your email.';
+    if (_passwordController.text.isEmpty) return 'Choose a password.';
     if (_passwordController.text.length < 8) {
       return 'Password must be at least 8 characters.';
     }
@@ -103,6 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
+      backgroundColor: AppTheme.bone,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -110,20 +111,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Create Account',
+              'Create your account',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              'Sign up to get started',
+              'Takes under a minute.',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
+              ).textTheme.bodyLarge?.copyWith(color: AppTheme.slate),
             ),
             const SizedBox(height: 32),
             if (_generalError != null) ...[
@@ -131,20 +132,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: const Color(0xFFFCE8E6),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
+                  border: Border.all(color: const Color(0xFFF5C6C2)),
                 ),
                 child: Text(
                   _generalError!,
-                  style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFFB3261E),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
             ],
             AppTextField(
               controller: _nameController,
-              label: 'Full Name',
+              label: 'Full name',
               errorText: _nameError,
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
@@ -179,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  color: AppTheme.slate,
                 ),
                 onPressed: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
@@ -188,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SizedBox(height: 16),
             AppTextField(
               controller: _confirmController,
-              label: 'Confirm Password',
+              label: 'Confirm password',
               errorText: _confirmError,
               obscureText: _obscureConfirm,
               textInputAction: TextInputAction.done,
@@ -196,31 +199,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.grey,
+                  color: AppTheme.slate,
                 ),
                 onPressed: () =>
                     setState(() => _obscureConfirm = !_obscureConfirm),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             AppButton(
-              label: 'Create Account',
+              label: 'Create account',
               loading: authProvider.loading,
               onPressed: _submit,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Center(
               child: TextButton(
                 onPressed: () => context.go(AppRoutes.login),
                 child: Text.rich(
                   TextSpan(
                     text: 'Already have an account? ',
-                    style: TextStyle(color: Colors.grey.shade600),
-                    children: const [
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
+                    children: [
                       TextSpan(
-                        text: 'Sign In',
+                        text: 'Sign in',
                         style: TextStyle(
-                          color: AppTheme.primaryColor,
+                          color: AppTheme.tipperAmber,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -229,6 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

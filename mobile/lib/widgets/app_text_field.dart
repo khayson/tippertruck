@@ -38,7 +38,6 @@ class AppTextField extends StatelessWidget {
       maxLines: maxLines,
       onChanged: onChanged,
       enabled: enabled,
-      style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,

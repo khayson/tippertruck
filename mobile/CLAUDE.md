@@ -10,7 +10,7 @@ Flutter 3.x / Dart 3.x (null safety) · Material 3 · go_router · provider · d
 
 ## Design system
 
-- Primary `#FF6600` (Material 3 `seedColor`), scaffold background `#F7F5F2`, white `Card` surfaces.
+- Palette: tipperAmber `#D45A12` (primary), laterite `#8C3A17` (pressed), ink `#191713` (text), slate `#6B655C` (secondary text), bone `#F4F0E8` (background), signal `#1E6B4C` (success). White card surfaces.
 - Body text ≥ 14sp, tap targets ≥ 48dp, contrast ≥ 4.5:1 (NFR07 — these are graded).
 - Cards for every selection option; `SingleChildScrollView` + `Column` for screen bodies.
 - One `AppButton`, one `AppTextField`, one `StatusBadge`, one `EmptyState`, one `ErrorState` widget — reused everywhere. No one-off styling inside screens.

@@ -59,7 +59,7 @@ void main() {
 
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Sign In'), findsWidgets);
+    expect(find.text('Sign in'), findsWidgets);
   });
 
   testWidgets('shows local validation error when fields are empty', (
@@ -68,11 +68,10 @@ void main() {
     await tester.pumpWidget(buildTestWidget(mockAuth));
     await tester.pumpAndSettle();
 
-    // Tap sign in without filling fields
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Please enter your email address.'), findsOneWidget);
+    expect(find.text('Enter your email to sign in.'), findsOneWidget);
   });
 
   testWidgets('shows server validation errors on form fields', (tester) async {
@@ -103,7 +102,7 @@ void main() {
       'password123',
     );
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
     await tester.pumpAndSettle();
 
     expect(
@@ -139,7 +138,7 @@ void main() {
       'wrongpassword',
     );
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
     await tester.pumpAndSettle();
 
     expect(

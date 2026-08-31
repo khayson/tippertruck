@@ -4,9 +4,24 @@ import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/config_provider.dart';
+import '../../widgets/sand_swatch.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  static const _sandDescriptions = {
+    'river-sand': 'Smooth, fine grain. Best for plastering and finishing work.',
+    'quarry-sand':
+        'Coarse, angular grain. Strong for concrete, foundations and blockwork.',
+    'filling-sand':
+        'Laterite fill. Used for backfilling, compaction and levelling.',
+  };
+
+  static const _sandImages = {
+    'river-sand': 'assets/images/sand_river.jpg',
+    'quarry-sand': 'assets/images/sand_quarry.jpg',
+    'filling-sand': 'assets/images/sand_filling.jpg',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -15,11 +30,13 @@ class HomeScreen extends StatelessWidget {
     final user = authProvider.user;
 
     return Scaffold(
+      backgroundColor: AppTheme.bone,
       appBar: AppBar(
         title: const Text('Tipper Truck'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Sign out',
             onPressed: authProvider.loading
                 ? null
                 : () => authProvider.logout(),
@@ -27,7 +44,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -36,28 +53,25 @@ class HomeScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 8,
+                  vertical: 10,
                 ),
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
+                  color: AppTheme.tipperAmber.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.shade200),
+                  border: Border.all(
+                    color: AppTheme.tipperAmber.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.wifi_off,
-                      size: 16,
-                      color: Colors.orange.shade700,
-                    ),
+                    Icon(Icons.wifi_off, size: 16, color: AppTheme.laterite),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'You are offline. Showing cached data.',
-                        style: TextStyle(
-                          color: Colors.orange.shade700,
-                          fontSize: 13,
+                        'Offline. Showing saved data.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.laterite,
                         ),
                       ),
                     ),
@@ -66,85 +80,69 @@ class HomeScreen extends StatelessWidget {
               ),
             Text(
               'Hello, ${user?.firstName ?? 'there'}',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.displayLarge,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
-              'What would you like to do today?',
+              'What are you building today?',
               style: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
+              ).textTheme.bodyLarge?.copyWith(color: AppTheme.slate),
             ),
-            const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
+            const SizedBox(height: 28),
+            if (configProvider.config != null)
+              ...configProvider.config!.sandTypes.map(
+                (sand) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Card(
+                    clipBehavior: Clip.antiAlias,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Book a Truck',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 120,
+                          child: _sandImages.containsKey(sand.slug)
+                              ? Image.asset(
+                                  _sandImages[sand.slug]!,
+                                  width: double.infinity,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => SandSwatch(
+                                    slug: sand.slug,
+                                    height: 120,
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                )
+                              : SandSwatch(
+                                  slug: sand.slug,
+                                  height: 120,
+                                  borderRadius: BorderRadius.zero,
+                                ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Order sand for your project',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 14,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                sand.name,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _sandDescriptions[sand.slug] ??
+                                    sand.description,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: AppTheme.slate,
+                                      height: 1.4,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.local_shipping,
-                    size: 48,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('Sand Types', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            if (configProvider.config != null)
-              ...configProvider.config!.sandTypes.map(
-                (sand) => Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: CircleAvatar(
-                      backgroundColor: AppTheme.primaryColor.withValues(
-                        alpha: 0.1,
-                      ),
-                      child: const Icon(
-                        Icons.terrain,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                    title: Text(
-                      sand.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      sand.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
