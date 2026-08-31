@@ -290,6 +290,46 @@ test('cod order without momo fields succeeds', function () {
     $response = $this->actingAs($user)->postJson('/api/v1/orders', $payload);
 
     $response->assertStatus(201);
+    expect($response->json('data.order.payment.status'))->toBe('pending');
+    expect($response->json('data.order.payment.method'))->toBe('cod');
+});
+
+test('momo order is marked paid via simulated gateway', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->postJson('/api/v1/orders', validOrderPayload());
+
+    $response->assertStatus(201);
+    expect($response->json('data.order.payment.status'))->toBe('paid');
+    expect($response->json('data.order.payment.method'))->toBe('momo');
+});
+
+test('cod payment becomes paid when order is delivered', function () {
+    $user = User::factory()->create();
+    $payload = validOrderPayload(['payment_method' => 'cod']);
+    unset($payload['momo_name'], $payload['momo_phone'], $payload['momo_network']);
+
+    $this->actingAs($user)->postJson('/api/v1/orders', $payload)->assertStatus(201);
+    $order = Order::first();
+    expect($order->payment_status->value)->toBe('pending');
+
+    $service = app(OrderStatusService::class);
+    $order = $service->transition($order, OrderStatus::OnTheWay, $user);
+    $order = $service->transition($order, OrderStatus::Delivered, $user);
+
+    expect($order->payment_status->value)->toBe('paid');
+});
+
+test('momo payment stays paid when order is delivered', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user)->postJson('/api/v1/orders', validOrderPayload())->assertStatus(201);
+    $order = Order::first();
+
+    $service = app(OrderStatusService::class);
+    $order = $service->transition($order, OrderStatus::OnTheWay, $user);
+    $order = $service->transition($order, OrderStatus::Delivered, $user);
+
+    expect($order->payment_status->value)->toBe('paid');
 });
 
 // --- Inactive types ---

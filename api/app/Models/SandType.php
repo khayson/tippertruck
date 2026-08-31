@@ -8,6 +8,7 @@ use Database\Factories\SandTypeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class SandType extends Model
 {
@@ -19,6 +20,7 @@ class SandType extends Model
         'slug',
         'description',
         'icon',
+        'image',
         'is_active',
         'sort_order',
     ];
@@ -29,6 +31,15 @@ class SandType extends Model
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function imageUrl(): ?string
+    {
+        if (! filled($this->image)) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->image);
     }
 
     public function orders(): HasMany

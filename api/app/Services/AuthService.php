@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Services\SocialAuth\SocialUser;
 use Illuminate\Support\Facades\Hash;
 
 class AuthService
@@ -43,8 +44,41 @@ class AuthService
             return null;
         }
 
-        if (! Hash::check($password, $user->password)) {
+        if ($user->password === null || ! Hash::check($password, $user->password)) {
             return null;
+        }
+
+        $token = $user->createToken('auth')->plainTextToken;
+
+        return ['user' => $user, 'token' => $token];
+    }
+
+    public function loginWithSocial(SocialUser $social): array
+    {
+        $user = User::query()
+            ->where('provider', $social->provider)
+            ->where('provider_id', $social->providerId)
+            ->first();
+
+        if (! $user) {
+            $user = User::query()->where('email', $social->email)->first();
+
+            if ($user) {
+                $user->forceFill([
+                    'provider' => $social->provider,
+                    'provider_id' => $social->providerId,
+                ])->save();
+            } else {
+                $user = User::create([
+                    'name' => $social->name,
+                    'email' => $social->email,
+                    'password' => null,
+                    'phone' => null,
+                    'role' => UserRole::Client,
+                    'provider' => $social->provider,
+                    'provider_id' => $social->providerId,
+                ]);
+            }
         }
 
         $token = $user->createToken('auth')->plainTextToken;

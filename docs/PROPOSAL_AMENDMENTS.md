@@ -90,9 +90,11 @@ GPS is excluded from scope elsewhere in the document, so "real-time tracking" ov
 
 **Sections:** §1.4, §3.3.5 (use case diagram) · **Status:** PENDING
 
-Use cases list operator actions, but §1.4 excludes an operator module.
+**Proposal / earlier amendment said:** Operators are served only through the web administration panel; a dedicated operator mobile app is future work.
 
-> Truck operators are served through the web administration panel in this release, where they see only the orders assigned to them and may advance those orders through the delivery states. A dedicated operator mobile application is identified as future work.
+**Implementation:** Operators (drivers) use the Flutter app. After login, `role = operator` routes to **Driver Home** (`/driver`): assigned deliveries, order detail, and Mark On The Way / Mark Delivered via `POST /operator/orders/{id}/dispatch|deliver`. Public signup remains clients only — driver accounts are created by an admin. Admins continue to use Filament at `/admin`; signing in as admin on mobile shows a staff portal hint. Filament may still allow operator panel access as a fallback.
+
+> Truck operators use the Tipper Truck mobile application’s driver home to view orders assigned to them and advance those orders through On The Way and Delivered. Operator accounts are provisioned by an administrator (no public driver registration). System administration (users, pricing, issues) remains on the Filament web panel. GPS tracking remains outside the scope of this release.
 
 ---
 
@@ -234,6 +236,9 @@ New columns / tables added to the data dictionary:
 | `delivery_zones` | `region` | string, unique | Ghana region name |
 | `delivery_zones` | `surcharge_ghs` | decimal(10,2) | Default 0 |
 | `delivery_zones` | `is_active` | boolean | Default true |
+| `users` | `password` | string, nullable | Null for social-only accounts |
+| `users` | `provider` | string, nullable | `google` or `facebook` |
+| `users` | `provider_id` | string, nullable | Unique with `provider` |
 
 ---
 
@@ -262,6 +267,30 @@ Seed prices (GHS) for the initial deployment:
 Surcharges: Greater Accra GHS 0, Central GHS 400.
 
 > Prices are based on typical Accra-area market rates for tipper truck sand delivery as of mid-2026. They are admin-editable via the Filament panel and the `sand_truck_prices` table. Launch coverage is Greater Accra and Central Region only; additional regions are activated by inserting rows into `delivery_zones` — no code change required.
+
+---
+
+## 25. Social sign-in (Google, Facebook)
+
+**Sections:** §3.3.3 (FR03–FR05), §3.4.5 (wireframes), §3.4.6 · **Status:** PENDING
+
+**Proposal said:** Email and password registration / login only.
+
+**Implementation:** Optional Google and Facebook sign-in on the login and register screens. `POST /auth/social` verifies a provider token and returns the same Sanctum `{ user, token }` envelope as password login. Mode is hybrid: when OAuth credentials are configured the API verifies real Google ID tokens and Facebook access tokens; otherwise it accepts HMAC-signed demo tokens so local and FYP demos work without third-party developer apps. Effective mode and enabled providers are published on `GET /config` as `social_auth`. Social-only accounts store a nullable `password` with `provider` / `provider_id` on `users`. Apple Sign In is deferred.
+
+> Customers may sign in with Google or Facebook in addition to email and password. The API issues the same Sanctum bearer token in either case. Where third-party OAuth credentials are not configured, a simulated token path supports demonstration and automated testing without depending on external identity providers. Apple Sign In is identified as future work.
+
+---
+
+## 26. Sand type images (admin-managed)
+
+**Sections:** §3.4.5 (Home wireframe / sand cards), FR07–08 · **Status:** APPLIED
+
+**Proposal said:** Sand types were catalogue rows with name/description; Home sand cards used static client artwork.
+
+**Implementation:** Admins upload a sand image when creating/editing a sand type in Filament (`sand_types.image` on the public disk). `GET /config` exposes `sand_types[].image_url` (absolute URL or `null`). The Flutter Home cards prefer `image_url` and fall back to bundled assets by slug when null.
+
+> Sand type imagery is admin-managed. The API publishes an optional `image_url` on each active sand type so the mobile Home cards stay in sync with the catalogue without shipping new app builds for artwork changes.
 
 ---
 

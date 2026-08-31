@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\User;
@@ -41,6 +43,14 @@ class OrderStatusService
                 OrderStatus::Delivered => $locked->delivered_at = now(),
                 default => null,
             };
+
+            if (
+                $to === OrderStatus::Delivered
+                && $locked->payment_method === PaymentMethod::Cod
+                && $locked->payment_status === PaymentStatus::Pending
+            ) {
+                $locked->payment_status = PaymentStatus::Paid;
+            }
 
             $locked->save();
 

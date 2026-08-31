@@ -61,7 +61,8 @@ Use **PHP backed enums** for every status/type column and cast them on the model
 ```php
 Route::prefix('v1')->group(function () {
     Route::post('auth/register', ...)->middleware('throttle:5,1');
-    Route::post('auth/login', ...)->middleware('throttle:5,1');
+    Route::post('auth/login', ...)->middleware('throttle:login');
+    Route::post('auth/social', ...)->middleware('throttle:social');
     Route::get('config', ...);
 
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
@@ -71,6 +72,13 @@ Route::prefix('v1')->group(function () {
         Route::post('orders/{order}/cancel', ...);
         Route::apiResource('issues', IssueController::class)->only(['index','store']);
         Route::post('chatbot/message', ...);
+
+        Route::prefix('operator')->middleware('EnsureOperator')->group(function () {
+            Route::get('orders', ...);
+            Route::get('orders/{order}', ...);
+            Route::post('orders/{order}/dispatch', ...);
+            Route::post('orders/{order}/deliver', ...);
+        });
     });
 });
 ```

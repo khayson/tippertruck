@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/api_client.dart';
 import '../core/api_exception.dart';
+import '../core/simulated_social_token.dart';
 import '../models/user.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -92,6 +93,60 @@ class AuthProvider extends ChangeNotifier {
       _loading = false;
       notifyListeners();
     }
+  }
+
+  /// [mode] from GET /config `social_auth.mode` (`simulated` or `real`).
+  Future<void> loginWithSocial({
+    required String provider,
+    required String mode,
+  }) async {
+    _loading = true;
+    notifyListeners();
+
+    try {
+      final idToken = await _resolveSocialIdToken(provider: provider, mode: mode);
+      final data = await _api.post(
+        '/auth/social',
+        data: {'provider': provider, 'id_token': idToken},
+      );
+      await _api.saveToken(data['token'] as String);
+      _user = User.fromJson(data['user'] as Map<String, dynamic>);
+      _status = AuthStatus.authenticated;
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String> _resolveSocialIdToken({
+    required String provider,
+    required String mode,
+  }) async {
+    if (mode == 'real') {
+      throw ApiException(
+        message:
+            'Real $provider sign-in needs OAuth app credentials. '
+            'Set SOCIAL_AUTH_MODE=simulated for demos, or configure '
+            'GOOGLE_CLIENT_ID / FACEBOOK_APP_* on the API.',
+      );
+    }
+
+    // Simulated demo identities — stable per provider for FYP demos.
+    return switch (provider) {
+      'google' => SimulatedSocialToken.mint(
+        provider: 'google',
+        sub: 'demo-google-sub',
+        email: 'demo.google@tippertruck.test',
+        name: 'Demo Google User',
+      ),
+      'facebook' => SimulatedSocialToken.mint(
+        provider: 'facebook',
+        sub: 'demo-facebook-sub',
+        email: 'demo.facebook@tippertruck.test',
+        name: 'Demo Facebook User',
+      ),
+      _ => throw ApiException(message: 'Unsupported social provider.'),
+    };
   }
 
   Future<void> logout() async {

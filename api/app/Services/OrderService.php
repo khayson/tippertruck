@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\SandType;
 use App\Models\TruckType;
 use App\Models\User;
+use App\Services\Payments\PaymentGateway;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 class OrderService
@@ -21,6 +24,7 @@ class OrderService
 
     public function __construct(
         private readonly PricingService $pricingService,
+        private readonly PaymentGateway $paymentGateway,
     ) {}
 
     public function create(array $data, User $user): Order
@@ -29,12 +33,13 @@ class OrderService
         $truckType = TruckType::findOrFail($data['truck_type_id']);
 
         $quote = $this->pricingService->quote($sandType, $truckType, $data['region']);
+        $paymentMethod = PaymentMethod::from($data['payment_method']);
 
         $attempts = 0;
 
         while (true) {
             try {
-                return DB::transaction(function () use ($data, $user, $quote) {
+                return DB::transaction(function () use ($data, $user, $quote, $paymentMethod) {
                     $order = Order::create([
                         'order_ref' => $this->generateOrderRef(),
                         'user_id' => $user->id,
@@ -50,7 +55,7 @@ class OrderService
                         'city' => $data['city'],
                         'landmark' => $data['landmark'] ?? null,
                         'delivery_note' => $data['delivery_note'] ?? null,
-                        'payment_method' => $data['payment_method'],
+                        'payment_method' => $paymentMethod,
                         'momo_name' => $data['momo_name'] ?? null,
                         'momo_phone' => $data['momo_phone'] ?? null,
                         'momo_network' => $data['momo_network'] ?? null,
@@ -58,6 +63,19 @@ class OrderService
                         'payment_status' => PaymentStatus::Pending,
                         'confirmed_at' => now(),
                     ]);
+
+                    if ($paymentMethod === PaymentMethod::Momo) {
+                        $result = $this->paymentGateway->charge($order);
+
+                        if (! $result->isSuccessful()) {
+                            throw ValidationException::withMessages([
+                                'payment_method' => [$result->message ?? 'MoMo payment failed. Please try again.'],
+                            ]);
+                        }
+
+                        $order->payment_status = $result->status;
+                        $order->save();
+                    }
 
                     OrderStatusLog::create([
                         'order_id' => $order->id,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../config/app_theme.dart';
+import '../../config/routes.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/config_provider.dart';
 
@@ -55,6 +57,13 @@ class _SplashScreenState extends State<SplashScreen>
     final authProvider = context.read<AuthProvider>();
 
     await Future.wait([configProvider.load(), authProvider.checkAuth()]);
+    if (!mounted) return;
+
+    if (authProvider.status == AuthStatus.authenticated) {
+      context.go(AppRoutes.homeForRole(authProvider.user?.role));
+    } else {
+      context.go(AppRoutes.welcome);
+    }
   }
 
   @override

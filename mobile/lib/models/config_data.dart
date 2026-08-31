@@ -4,6 +4,7 @@ class SandType {
   final String slug;
   final String description;
   final String? icon;
+  final String? imageUrl;
 
   const SandType({
     required this.id,
@@ -11,6 +12,7 @@ class SandType {
     required this.slug,
     required this.description,
     this.icon,
+    this.imageUrl,
   });
 
   factory SandType.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class SandType {
       slug: json['slug'] as String,
       description: json['description'] as String,
       icon: json['icon'] as String?,
+      imageUrl: json['image_url'] as String?,
     );
   }
 }
@@ -115,6 +118,31 @@ class PaymentNetwork {
   }
 }
 
+class SocialAuthConfig {
+  final String mode;
+  final List<String> providers;
+
+  const SocialAuthConfig({required this.mode, required this.providers});
+
+  factory SocialAuthConfig.fromJson(Map<String, dynamic>? json) {
+    if (json == null) {
+      return const SocialAuthConfig(
+        mode: 'simulated',
+        providers: ['google', 'facebook'],
+      );
+    }
+    return SocialAuthConfig(
+      mode: json['mode'] as String? ?? 'simulated',
+      providers: (json['providers'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const ['google', 'facebook'],
+    );
+  }
+
+  bool get isSimulated => mode == 'simulated';
+}
+
 class ConfigData {
   final List<SandType> sandTypes;
   final List<TruckType> truckTypes;
@@ -123,6 +151,7 @@ class ConfigData {
   final List<String> regions;
   final List<IssueType> issueTypes;
   final List<PaymentNetwork> paymentNetworks;
+  final SocialAuthConfig socialAuth;
   final String configVersion;
 
   const ConfigData({
@@ -133,6 +162,7 @@ class ConfigData {
     required this.regions,
     required this.issueTypes,
     required this.paymentNetworks,
+    required this.socialAuth,
     required this.configVersion,
   });
 
@@ -159,6 +189,9 @@ class ConfigData {
       paymentNetworks: (json['payment_networks'] as List<dynamic>)
           .map((e) => PaymentNetwork.fromJson(e as Map<String, dynamic>))
           .toList(),
+      socialAuth: SocialAuthConfig.fromJson(
+        json['social_auth'] as Map<String, dynamic>?,
+      ),
       configVersion: json['config_version'] as String,
     );
   }
@@ -207,6 +240,10 @@ class ConfigData {
       'payment_networks': paymentNetworks
           .map((e) => {'value': e.value, 'label': e.label})
           .toList(),
+      'social_auth': {
+        'mode': socialAuth.mode,
+        'providers': socialAuth.providers,
+      },
       'config_version': configVersion,
     };
   }
