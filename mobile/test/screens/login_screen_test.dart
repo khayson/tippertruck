@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 import 'package:tippertruck/core/api_exception.dart';
+import 'package:tippertruck/models/config_data.dart';
 import 'package:tippertruck/providers/auth_provider.dart';
+import 'package:tippertruck/providers/config_provider.dart';
 import 'package:tippertruck/screens/auth/login_screen.dart';
 
 class MockAuthProvider extends Mock implements AuthProvider {
@@ -16,6 +18,20 @@ class MockAuthProvider extends Mock implements AuthProvider {
 
   @override
   bool get loading => _loading;
+
+  @override
+  void addListener(VoidCallback listener) {}
+
+  @override
+  void removeListener(VoidCallback listener) {}
+}
+
+class MockConfigProvider extends Mock implements ConfigProvider {
+  @override
+  ConfigData? get config => null;
+
+  @override
+  bool get loading => false;
 
   @override
   void addListener(VoidCallback listener) {}
@@ -40,8 +56,11 @@ Widget buildTestWidget(MockAuthProvider authProvider) {
     ],
   );
 
-  return ChangeNotifierProvider<AuthProvider>.value(
-    value: authProvider,
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+      ChangeNotifierProvider<ConfigProvider>.value(value: MockConfigProvider()),
+    ],
     child: MaterialApp.router(routerConfig: router),
   );
 }
