@@ -429,11 +429,15 @@ class _TruckCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Text(
-                      'BASE FOR ${truck.name.toUpperCase()}',
-                      style: TtStyle.eyebrow(color: muted),
+                    Expanded(
+                      child: Text(
+                        'BASE FOR ${truck.name.toUpperCase()}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TtStyle.eyebrow(color: muted),
+                      ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     Text(
                       priceGhs == null ? '—' : 'GHS $priceGhs',
                       style: AppTheme.moneyStyle.copyWith(
