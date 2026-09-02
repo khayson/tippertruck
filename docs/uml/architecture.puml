@@ -1,0 +1,34 @@
+@startuml tippertruck-architecture
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam arrowColor #6B655C
+skinparam rectangle {
+  BackgroundColor #F4F0E8
+  BorderColor #D45A12
+  FontColor #191713
+}
+skinparam database {
+  BackgroundColor #FFF7ED
+  BorderColor #D45A12
+}
+
+rectangle "**Presentation tier**" as Pres {
+  rectangle "Flutter client\nAndroid demonstration\n(same Dart codebase can target iOS)\nDio · Provider · go_router\nflutter_secure_storage" as Flutter
+  rectangle "Filament v5 panel\n/admin  ·  session auth\nAdmins: users, pricing, issues\nOperators: assigned orders" as Filament
+}
+
+rectangle "**Business-logic tier**" as Biz {
+  rectangle "Laravel 13 REST API  /api/v1\nForm Requests · Services · API Resources\nSanctum tokens (7-day, revocable)\nOrderStatusService · SimulatedGateway\nthrottle · Pest · GitHub Actions" as API
+}
+
+rectangle "**Data tier**" as Data {
+  database "MySQL 8  tipper_truck_db\n9 domain tables +\nSanctum personal_access_tokens\nEloquent parameterised queries" as DB
+}
+
+Flutter -down-> API : HTTPS + JSON\nAuthorization: Bearer
+Filament -down-> API : Same Laravel app\npolicies / panel
+API -down-> DB : Read / write
+
+@enduml

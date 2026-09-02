@@ -1,0 +1,38 @@
+@startuml tippertruck-sequence
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam sequenceArrowColor #6B655C
+skinparam participantBackgroundColor #FFF7ED
+skinparam participantBorderColor #D45A12
+skinparam actorBackgroundColor #F4F0E8
+skinparam actorBorderColor #D45A12
+skinparam databaseBackgroundColor #F4F0E8
+skinparam databaseBorderColor #D45A12
+skinparam lifeLineBorderColor #6B655C
+
+actor Client
+participant "Flutter app" as App
+participant "Laravel 13 API\n(Sanctum)" as API
+database "MySQL 8" as DB
+
+Client -> App : Open login
+App -> API : POST /api/v1/auth/login
+API -> DB : Find user, bcrypt verify
+API --> App : 200 + Sanctum bearer token
+App -> App : Store token in\nflutter_secure_storage
+
+App -> API : GET /api/v1/config\nAuthorization: Bearer
+API -> DB : Sand types, trucks, zones, prices
+API --> App : Catalogue JSON
+
+Client -> App : Sand → truck → location\n→ summary → payment
+App -> API : POST /api/v1/orders
+API -> API : Validate; snapshot price +\nzone surcharge
+API -> API : SimulatedGateway\n(MoMo paid / COD pending)
+API -> DB : INSERT order +\norder_status_log
+API --> App : 201 + order_ref, total_ghs,\nstatus_label, progress_percent
+App -> Client : Tracking screen\n(poll GET /api/v1/orders/{id})
+
+@enduml

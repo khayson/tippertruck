@@ -1,0 +1,57 @@
+@startuml tippertruck-use-case
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam actorBackgroundColor #F4F0E8
+skinparam actorBorderColor #D45A12
+skinparam usecaseBackgroundColor #FFF7ED
+skinparam usecaseBorderColor #D45A12
+skinparam rectangleBorderColor #191713
+skinparam arrowColor #6B655C
+skinparam wrapWidth 160
+
+left to right direction
+
+actor "Client" as client
+actor "Truck Operator" as operator
+actor "System\nAdministrator" as admin
+actor "Chatbot\n«system»" as bot
+
+rectangle "Tipper Truck" {
+  usecase "Register / Login\n(email, social, auto-login)" as UC1
+  usecase "Book sand delivery" as UC2
+  usecase "Select sand and truck" as UC2a
+  usecase "Enter delivery location" as UC2b
+  usecase "Confirm simulated payment" as UC2c
+  usecase "Track order (poll status)" as UC3
+  usecase "View order history" as UC4
+  usecase "Use chatbot" as UC5
+  usecase "Report issue" as UC6
+  usecase "View assigned orders" as UC7
+  usecase "Mark On The Way" as UC8
+  usecase "Mark Delivered" as UC9
+  usecase "Manage users and pricing" as UC10
+  usecase "Manage orders and issues" as UC11
+  usecase "Answer domain query" as UC12
+}
+
+client --> UC1
+client --> UC2
+client --> UC3
+client --> UC4
+client --> UC5
+client --> UC6
+UC2 ..> UC2a : «include»
+UC2 ..> UC2b : «include»
+UC2 ..> UC2c : «include»
+client --> bot : queries
+bot --> UC12
+
+operator --> UC7
+operator --> UC8
+operator --> UC9
+admin --> UC10
+admin --> UC11
+
+@enduml

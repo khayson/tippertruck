@@ -1,0 +1,67 @@
+@startuml tippertruck-activity
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam activityBackgroundColor #FFF7ED
+skinparam activityBorderColor #D45A12
+skinparam activityDiamondBackgroundColor #F4F0E8
+skinparam activityDiamondBorderColor #D45A12
+skinparam arrowColor #6B655C
+skinparam swimlaneBorderColor #8C3A17
+skinparam swimlaneTitleBackgroundColor #F4F0E8
+
+|Flutter client|
+start
+:App launch;\ncheck Sanctum token in secure storage;
+
+if (Token valid?) then (yes)
+  :Navigate to Home;
+else (no)
+  :Welcome / Login / Register;
+  :POST /api/v1/auth/login;
+  |Laravel API|
+  :Verify bcrypt hash;\nissue Sanctum token;
+  |Flutter client|
+  if (Login OK?) then (yes)
+    :Store token; go to Home;
+  else (no)
+    :Show error; remain on login;
+    stop
+  endif
+endif
+
+:Select sand type;
+:Select truck size;
+:Enter delivery location;
+
+if (Mandatory fields valid?) then (yes)
+  :Order summary;
+else (no)
+  :Inline validation errors;
+  stop
+endif
+
+:Choose MoMo or cash on delivery;
+:Confirm and place order\nPOST /api/v1/orders;
+
+|Laravel API|
+:Authenticate token;\nvalidate; snapshot prices;\nSimulatedGateway;
+|MySQL|
+:Insert order and status log;
+|Laravel API|
+if (Created 201?) then (yes)
+  |Flutter client|
+  :Tracking screen;\npoll GET /orders/{id} ~10s;
+  if (Status = Delivered?) then (yes)
+    :Show completion;
+  else (no)
+    :Update progress bar;
+  endif
+else (no)
+  |Flutter client|
+  :Surface API errors on payment screen;
+endif
+
+stop
+@enduml
