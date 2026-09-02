@@ -32,25 +32,25 @@ class TtStyle {
   }
 
   static List<BoxShadow> get softLift => [
-        BoxShadow(
-          color: AppTheme.ink.withValues(alpha: 0.07),
-          blurRadius: 28,
-          offset: const Offset(0, 14),
-        ),
-        BoxShadow(
-          color: AppTheme.ink.withValues(alpha: 0.03),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ];
+    BoxShadow(
+      color: AppTheme.ink.withValues(alpha: 0.07),
+      blurRadius: 28,
+      offset: const Offset(0, 14),
+    ),
+    BoxShadow(
+      color: AppTheme.ink.withValues(alpha: 0.03),
+      blurRadius: 6,
+      offset: const Offset(0, 2),
+    ),
+  ];
 
   static List<BoxShadow> get dockShadow => [
-        BoxShadow(
-          color: AppTheme.ink.withValues(alpha: 0.16),
-          blurRadius: 32,
-          offset: const Offset(0, 12),
-        ),
-      ];
+    BoxShadow(
+      color: AppTheme.ink.withValues(alpha: 0.16),
+      blurRadius: 32,
+      offset: const Offset(0, 12),
+    ),
+  ];
 
   static Color statusColor(String status) {
     return switch (status) {

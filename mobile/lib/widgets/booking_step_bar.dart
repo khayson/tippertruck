@@ -53,9 +53,7 @@ class BookingStepBar extends StatelessWidget {
                       ? TextAlign.right
                       : TextAlign.center,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: i < current
-                        ? AppTheme.tipperAmber
-                        : AppTheme.slate,
+                    color: i < current ? AppTheme.tipperAmber : AppTheme.slate,
                     fontWeight: i == current - 1
                         ? FontWeight.w800
                         : FontWeight.w600,

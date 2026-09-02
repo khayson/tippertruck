@@ -122,9 +122,9 @@ class TtOrderTile extends StatelessWidget {
                         '${order.delivery.city}, ${order.delivery.region}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.slate,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
                       ),
                     ),
                     if (order.payment != null)
@@ -189,9 +189,9 @@ class TtOrderTile extends StatelessWidget {
                     if (meta != null)
                       Text(
                         meta!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.slate,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
                       ),
                     const SizedBox(width: 4),
                     Icon(
@@ -200,10 +200,7 @@ class TtOrderTile extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (footer != null) ...[
-                  const SizedBox(height: 12),
-                  footer!,
-                ],
+                if (footer != null) ...[const SizedBox(height: 12), footer!],
               ],
             ),
           ),
@@ -252,17 +249,14 @@ class _FeaturedTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'LIVE ORDER',
-                      style: TtStyle.eyebrow(color: accent),
-                    ),
+                    Text('LIVE ORDER', style: TtStyle.eyebrow(color: accent)),
                     const Spacer(),
                     if (meta != null)
                       Text(
                         meta!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white54,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: Colors.white54),
                       ),
                   ],
                 ),
@@ -274,9 +268,9 @@ class _FeaturedTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '${order.sandTypeName} · ${order.truckTypeName}',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white70,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
                 ClipRRect(
@@ -316,9 +310,9 @@ class _FeaturedTile extends StatelessWidget {
                         '${order.delivery.city}, ${order.delivery.region}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                       ),
                     ),
                     Text(

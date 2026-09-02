@@ -50,7 +50,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       fromUser: false,
       quickReplies: [
         _QuickReply(label: 'Prices', message: 'How much is a medium truck?'),
-        _QuickReply(label: 'Sand types', message: 'What sand types do you have?'),
+        _QuickReply(
+          label: 'Sand types',
+          message: 'What sand types do you have?',
+        ),
         _QuickReply(label: 'Delivery', message: 'How long does delivery take?'),
       ],
     ),
@@ -124,8 +127,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         );
       }
       final suggested = data['suggested_issue_type'] as String?;
-      if (suggested != null &&
-          !replies.any((r) => r.issueType == suggested)) {
+      if (suggested != null && !replies.any((r) => r.issueType == suggested)) {
         replies.insert(
           0,
           _QuickReply(
@@ -191,7 +193,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFFE06A1A), AppTheme.tipperAmber, AppTheme.laterite],
+                colors: [
+                  Color(0xFFE06A1A),
+                  AppTheme.tipperAmber,
+                  AppTheme.laterite,
+                ],
               ),
               boxShadow: [
                 BoxShadow(
@@ -342,9 +348,7 @@ class _Bubble extends StatelessWidget {
                 bottomLeft: Radius.circular(message.fromUser ? 18 : 4),
                 bottomRight: Radius.circular(message.fromUser ? 4 : 18),
               ),
-              border: message.fromUser
-                  ? null
-                  : Border.all(color: TtStyle.line),
+              border: message.fromUser ? null : Border.all(color: TtStyle.line),
               boxShadow: TtStyle.softLift,
             ),
             child: Text(

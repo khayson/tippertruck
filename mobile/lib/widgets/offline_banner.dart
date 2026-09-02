@@ -24,9 +24,7 @@ class OfflineBanner extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppTheme.tipperAmber.withValues(alpha: 0.28),
-        ),
+        border: Border.all(color: AppTheme.tipperAmber.withValues(alpha: 0.28)),
       ),
       child: Row(
         children: [

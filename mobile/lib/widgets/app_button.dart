@@ -72,20 +72,21 @@ class AppButton extends StatelessWidget {
 
     return ElevatedButton(
       onPressed: loading ? null : onPressed,
-      style: ElevatedButton.styleFrom(
-        foregroundColor: Colors.white,
-        minimumSize: Size(double.infinity, height),
-        shape: RoundedRectangleBorder(borderRadius: radius),
-        textStyle: labelStyle,
-      ).copyWith(
-        backgroundColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.pressed)) return pressed;
-          if (states.contains(WidgetState.disabled)) {
-            return fill.withValues(alpha: 0.5);
-          }
-          return fill;
-        }),
-      ),
+      style:
+          ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            minimumSize: Size(double.infinity, height),
+            shape: RoundedRectangleBorder(borderRadius: radius),
+            textStyle: labelStyle,
+          ).copyWith(
+            backgroundColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) return pressed;
+              if (states.contains(WidgetState.disabled)) {
+                return fill.withValues(alpha: 0.5);
+              }
+              return fill;
+            }),
+          ),
       child: child,
     );
   }

@@ -88,10 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _clearErrors();
     try {
       final auth = context.read<AuthProvider>();
-      await auth.loginWithSocial(
-        provider: provider,
-        mode: mode,
-      );
+      await auth.loginWithSocial(provider: provider, mode: mode);
       if (!mounted) return;
       context.go(AppRoutes.homeForRole(auth.user?.role));
     } on ApiException catch (e) {
@@ -246,9 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Center(
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.register),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(48, 48),
-                  ),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                   child: Text.rich(
                     TextSpan(
                       text: "Don't have an account? ",

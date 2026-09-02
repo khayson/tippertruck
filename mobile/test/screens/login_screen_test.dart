@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 import 'package:tippertruck/core/api_exception.dart';
+import 'package:tippertruck/models/config_data.dart';
 import 'package:tippertruck/providers/auth_provider.dart';
+import 'package:tippertruck/providers/config_provider.dart';
 import 'package:tippertruck/screens/auth/login_screen.dart';
 
 class MockAuthProvider extends Mock implements AuthProvider {
@@ -16,6 +18,20 @@ class MockAuthProvider extends Mock implements AuthProvider {
 
   @override
   bool get loading => _loading;
+
+  @override
+  void addListener(VoidCallback listener) {}
+
+  @override
+  void removeListener(VoidCallback listener) {}
+}
+
+class MockConfigProvider extends Mock implements ConfigProvider {
+  @override
+  ConfigData? get config => null;
+
+  @override
+  bool get loading => false;
 
   @override
   void addListener(VoidCallback listener) {}
@@ -40,8 +56,11 @@ Widget buildTestWidget(MockAuthProvider authProvider) {
     ],
   );
 
-  return ChangeNotifierProvider<AuthProvider>.value(
-    value: authProvider,
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+      ChangeNotifierProvider<ConfigProvider>.value(value: MockConfigProvider()),
+    ],
     child: MaterialApp.router(routerConfig: router),
   );
 }
@@ -68,7 +87,8 @@ void main() {
     await tester.pumpWidget(buildTestWidget(mockAuth));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
     await tester.pumpAndSettle();
 
     expect(find.text('Enter your email to sign in.'), findsOneWidget);
@@ -93,16 +113,11 @@ void main() {
     await tester.pumpWidget(buildTestWidget(mockAuth));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Email'),
-      'bad-email',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Password'),
-      'password123',
-    );
+    await tester.enterText(find.byType(TextField).at(0), 'bad-email');
+    await tester.enterText(find.byType(TextField).at(1), 'password123');
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
     await tester.pumpAndSettle();
 
     expect(
@@ -129,16 +144,11 @@ void main() {
     await tester.pumpWidget(buildTestWidget(mockAuth));
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Email'),
-      'test@example.com',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Password'),
-      'wrongpassword',
-    );
+    await tester.enterText(find.byType(TextField).at(0), 'test@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'wrongpassword');
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign in'));
+    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Sign In'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Sign In'));
     await tester.pumpAndSettle();
 
     expect(

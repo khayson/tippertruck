@@ -13,11 +13,7 @@ class ClientShell extends StatelessWidget {
   final Widget child;
   final String location;
 
-  const ClientShell({
-    super.key,
-    required this.child,
-    required this.location,
-  });
+  const ClientShell({super.key, required this.child, required this.location});
 
   static const _tabs = [
     AppRoutes.home,

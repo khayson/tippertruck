@@ -221,11 +221,7 @@ class _StatsRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _StatChip(
-            label: 'All',
-            value: '$total',
-            color: AppTheme.ink,
-          ),
+          child: _StatChip(label: 'All', value: '$total', color: AppTheme.ink),
         ),
       ],
     );
@@ -260,10 +256,7 @@ class _StatChip extends StatelessWidget {
             style: TtStyle.eyebrow(color: AppTheme.slate),
           ),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: TtStyle.display(24, color: color),
-          ),
+          Text(value, style: TtStyle.display(24, color: color)),
         ],
       ),
     );

@@ -207,11 +207,7 @@ class _TotalHero extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE06A1A),
-            AppTheme.tipperAmber,
-            AppTheme.laterite,
-          ],
+          colors: [Color(0xFFE06A1A), AppTheme.tipperAmber, AppTheme.laterite],
         ),
         boxShadow: [
           BoxShadow(
@@ -237,7 +233,9 @@ class _TotalHero extends StatelessWidget {
             children: [
               Text(
                 'PREVIEW TOTAL',
-                style: TtStyle.eyebrow(color: Colors.white.withValues(alpha: 0.85)),
+                style: TtStyle.eyebrow(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -275,11 +273,7 @@ class _SummaryCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onEdit;
 
-  const _SummaryCard({
-    required this.eyebrow,
-    required this.child,
-    this.onEdit,
-  });
+  const _SummaryCard({required this.eyebrow, required this.child, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -443,9 +437,9 @@ class _ReceiptCard extends StatelessWidget {
             children: [
               Text(
                 'Total',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: Colors.white),
               ),
               const Spacer(),
               Text(
@@ -477,9 +471,9 @@ class _ReceiptCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Colors.white70,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
         ),
         const Spacer(),
         Text(

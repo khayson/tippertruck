@@ -125,8 +125,7 @@ class _TrackingScreenState extends State<TrackingScreen>
     return switch (order.status) {
       'confirmed' =>
         'We are staging your ${order.sandTypeName.toLowerCase()} load.',
-      'on_the_way' =>
-        'Driver is heading to ${order.delivery.city}.',
+      'on_the_way' => 'Driver is heading to ${order.delivery.city}.',
       'delivered' => 'Thanks for ordering with Tipper Truck.',
       'cancelled' => 'This load will not be dispatched.',
       _ => 'Live status from the yard.',
@@ -149,8 +148,7 @@ class _TrackingScreenState extends State<TrackingScreen>
           title: const Text('Tracking'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () =>
-                AppRoutes.leaveToShell(context, AppRoutes.orders),
+            onPressed: () => AppRoutes.leaveToShell(context, AppRoutes.orders),
           ),
           actions: [
             if (order != null && !order.isTerminal)
@@ -243,9 +241,7 @@ class _TrackingScreenState extends State<TrackingScreen>
                                 const SizedBox(height: 4),
                                 Text(
                                   order.capacityLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(color: AppTheme.slate),
                                 ),
                               ],
@@ -292,8 +288,9 @@ class _TrackingScreenState extends State<TrackingScreen>
                               const SizedBox(height: 8),
                               Text(
                                 order.delivery.formattedAddress,
-                                style: Theme.of(context).textTheme.bodyLarge
-                                    ?.copyWith(height: 1.35),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.copyWith(height: 1.35),
                               ),
                             ],
                           ),
@@ -320,7 +317,8 @@ class _TrackingScreenState extends State<TrackingScreen>
                                 ),
                                 StatusBadge(
                                   label: order.payment!.status,
-                                  color: order.payment!.status == 'paid' ||
+                                  color:
+                                      order.payment!.status == 'paid' ||
                                           order.payment!.status == 'pending'
                                       ? AppTheme.signal
                                       : AppTheme.slate,
@@ -417,10 +415,7 @@ class _HeroPanel extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(
-            order.orderRef,
-            style: TtStyle.eyebrow(color: accent),
-          ),
+          Text(order.orderRef, style: TtStyle.eyebrow(color: accent)),
           const SizedBox(height: 14),
           SizedBox(
             width: 120,
@@ -545,21 +540,9 @@ class _Timeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = [
-      (
-        'Confirmed',
-        'Order accepted at the yard',
-        Icons.verified_rounded,
-      ),
-      (
-        'On the way',
-        'Tipper left for delivery',
-        Icons.local_shipping_rounded,
-      ),
-      (
-        'Delivered',
-        'Sand tipped at your site',
-        Icons.flag_rounded,
-      ),
+      ('Confirmed', 'Order accepted at the yard', Icons.verified_rounded),
+      ('On the way', 'Tipper left for delivery', Icons.local_shipping_rounded),
+      ('Delivered', 'Sand tipped at your site', Icons.flag_rounded),
     ];
 
     final active = switch (status) {
@@ -611,9 +594,7 @@ class _Timeline extends StatelessWidget {
                     ),
                   ),
                   child: Icon(
-                    active > i
-                        ? Icons.check_rounded
-                        : steps[i].$3,
+                    active > i ? Icons.check_rounded : steps[i].$3,
                     size: 18,
                     color: active >= i ? accent : AppTheme.slate,
                   ),
@@ -658,9 +639,9 @@ class _Timeline extends StatelessWidget {
                     ),
                     child: Text(
                       'NOW',
-                      style: TtStyle.eyebrow(color: accent).copyWith(
-                        fontSize: 9,
-                      ),
+                      style: TtStyle.eyebrow(
+                        color: accent,
+                      ).copyWith(fontSize: 9),
                     ),
                   ),
               ],

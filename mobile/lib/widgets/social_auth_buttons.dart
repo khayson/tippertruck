@@ -110,7 +110,10 @@ class _SocialIconButton extends StatelessWidget {
 
   ({IconData icon, Color color}) _metaFor(String provider) {
     return switch (provider) {
-      'google' => (icon: Icons.g_mobiledata_rounded, color: const Color(0xFFDB4437)),
+      'google' => (
+        icon: Icons.g_mobiledata_rounded,
+        color: const Color(0xFFDB4437),
+      ),
       'facebook' => (icon: Icons.facebook, color: const Color(0xFF1877F2)),
       _ => (icon: Icons.login, color: AppTheme.ink),
     };

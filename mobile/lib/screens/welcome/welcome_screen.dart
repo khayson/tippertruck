@@ -31,9 +31,7 @@ class WelcomeScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   children: [
                     Positioned.fill(
-                      child: CustomPaint(
-                        painter: _StripeBackdropPainter(),
-                      ),
+                      child: CustomPaint(painter: _StripeBackdropPainter()),
                     ),
                     Padding(
                       padding: EdgeInsets.only(top: size.height * 0.02),

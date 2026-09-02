@@ -1,0 +1,107 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#F4F0E8",
+    "primaryTextColor": "#191713",
+    "primaryBorderColor": "#D45A12",
+    "lineColor": "#6B655C",
+    "secondaryColor": "#FFF7ED",
+    "tertiaryColor": "#FFFFFF",
+    "fontFamily": "Segoe UI, Arial, sans-serif",
+    "fontSize": "14px"
+  },
+  "er": { "layoutDirection": "TB", "useMaxWidth": true }
+}}%%
+erDiagram
+    USERS ||--o{ ORDERS : "places (user_id RESTRICT)"
+    USERS ||--o{ ORDERS : "assigned as operator (SET NULL)"
+    SAND_TYPES ||--o{ ORDERS : "sand_type_id RESTRICT"
+    TRUCK_TYPES ||--o{ ORDERS : "truck_type_id RESTRICT"
+    ORDERS ||--o{ ORDER_STATUS_LOG : "order_id CASCADE"
+    USERS ||--o{ ORDER_STATUS_LOG : "changed_by SET NULL"
+    USERS ||--o{ ISSUES : "user_id CASCADE"
+    ORDERS ||--o{ ISSUES : "order_id SET NULL"
+    SAND_TYPES ||--o{ SAND_TRUCK_PRICES : "sand_type_id RESTRICT"
+    TRUCK_TYPES ||--o{ SAND_TRUCK_PRICES : "truck_type_id RESTRICT"
+    USERS ||--o{ CHATBOT_UNMATCHED_LOGS : "user_id CASCADE"
+    DELIVERY_ZONES }o..o{ ORDERS : "region matched at create (no FK)"
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password "nullable for social"
+        string phone
+        string role
+        string provider
+        string provider_id
+    }
+    SAND_TYPES {
+        bigint id PK
+        string name
+        string slug UK
+        string description
+        string icon
+        string image "nullable"
+        boolean is_active
+        int sort_order
+    }
+    TRUCK_TYPES {
+        bigint id PK
+        string name
+        string slug UK
+        string capacity_label
+        decimal price_ghs "deprecated"
+        boolean is_popular
+        boolean is_active
+    }
+    SAND_TRUCK_PRICES {
+        bigint id PK
+        bigint sand_type_id FK
+        bigint truck_type_id FK
+        decimal price_ghs
+    }
+    DELIVERY_ZONES {
+        bigint id PK
+        string region UK
+        decimal surcharge_ghs
+        boolean is_active
+    }
+    ORDERS {
+        bigint id PK
+        string order_ref UK
+        bigint user_id FK
+        bigint sand_type_id FK
+        bigint truck_type_id FK
+        bigint assigned_operator_id FK
+        decimal price_ghs
+        decimal delivery_fee_ghs
+        decimal total_ghs
+        string payment_method
+        string payment_status
+        string status
+    }
+    ORDER_STATUS_LOG {
+        bigint id PK
+        bigint order_id FK
+        string old_status
+        string new_status
+        bigint changed_by FK
+        string note
+    }
+    ISSUES {
+        bigint id PK
+        bigint user_id FK
+        bigint order_id FK
+        string issue_type
+        text description
+        string status
+        text admin_response
+    }
+    CHATBOT_UNMATCHED_LOGS {
+        bigint id PK
+        bigint user_id FK
+        text message
+        string top_intent
+        decimal confidence
+    }

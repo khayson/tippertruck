@@ -50,9 +50,7 @@ class DriverOrdersProvider extends ChangeNotifier {
 
     try {
       final data = await _api.get('/operator/orders/$id');
-      _selected = OrderSummary.fromJson(
-        data['order'] as Map<String, dynamic>,
-      );
+      _selected = OrderSummary.fromJson(data['order'] as Map<String, dynamic>);
     } on ApiException catch (e) {
       _error = e.message;
       _selected = null;

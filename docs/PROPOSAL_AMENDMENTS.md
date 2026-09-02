@@ -4,13 +4,15 @@ Every place the built system differs from the submitted proposal, with the repla
 
 **How to use this file.** Add an entry the moment a decision diverges from the proposal — same commit as the code, never "later". Each entry names the proposal section, what it currently says, what it should say, and why. At the end, one editing pass through the `.docx` applies them all. Do not commit the proposal `.docx` to this repository; it carries student index numbers.
 
+**Docx pass:** Amendments 1–26 were applied to the original `.docx` on 2026-09-01 (backup: `.docx.bak`). The review copy `TipperTruck_Proposal_final_year_project.updated.docx` also has cover/declaration/abstract, rebuilt TOC, List of Figures/Tables, UML Figures 3.1–3.4, and the ERD as Figure 3.5. Copy that file over the original only after review.
+
 **Status key:** `PENDING` = not yet applied to the document · `APPLIED` = written into the .docx
 
 ---
 
 ## 1. Backend framework
 
-**Sections:** §1.1, §2.1, §3.4.1 · **Status:** PENDING
+**Sections:** §1.1, §2.1, §3.4.1 · **Status:** APPLIED
 
 Proposal says the backend is "PHP". Built on Laravel 13.
 
@@ -20,7 +22,7 @@ Proposal says the backend is "PHP". Built on Laravel 13.
 
 ## 2. Authentication mechanism
 
-**Sections:** §1.3 (objective 4), §2.1, §3.3.3 (FR03–FR05), §3.3.6, §3.4.1, §3.4.6, NFR04 · **Status:** PENDING
+**Sections:** §1.3 (objective 4), §2.1, §3.3.3 (FR03–FR05), §3.3.6, §3.4.1, §3.4.6, NFR04 · **Status:** APPLIED
 
 Proposal specifies JWT signed with HS256. Built with Laravel Sanctum personal access tokens. Search the document for "JWT" — roughly nine occurrences.
 
@@ -30,7 +32,7 @@ Proposal specifies JWT signed with HS256. Built with Laravel Sanctum personal ac
 
 ## 3. Enumerated columns stored as VARCHAR
 
-**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** APPLIED
 
 Proposal specifies SQL `ENUM` for status, role, payment and issue-type columns. Implemented as `VARCHAR` with application-level PHP backed enums.
 
@@ -40,7 +42,7 @@ Proposal specifies SQL `ENUM` for status, role, payment and issue-type columns. 
 
 ## 4. Price snapshotting
 
-**Section:** §3.4.2 · **Status:** PENDING
+**Section:** §3.4.2 · **Status:** APPLIED
 
 Not addressed in the proposal. Add to the orders table discussion.
 
@@ -50,7 +52,7 @@ Not addressed in the proposal. Add to the orders table discussion.
 
 ## 5. Rate limiting moved from future work to implemented
 
-**Sections:** §3.4.6, NFR04 · **Status:** PENDING
+**Sections:** §3.4.6, NFR04 · **Status:** APPLIED
 
 > Rate limiting is implemented rather than deferred. Registration is limited to five attempts per minute per address. Login applies two limits: five attempts per minute keyed on the combination of email address and IP address, and twenty per minute per IP address. Keying on the email address as well as the IP address prevents subscribers sharing a carrier-grade NAT address — common on Ghanaian mobile networks — from locking one another out, while still constraining an attacker targeting a single account.
 
@@ -58,7 +60,7 @@ Not addressed in the proposal. Add to the orders table discussion.
 
 ## 6. Timing-safe authentication
 
-**Section:** §3.4.6 · **Status:** PENDING
+**Section:** §3.4.6 · **Status:** APPLIED
 
 Not in the proposal. Worth including; it demonstrates threat modelling.
 
@@ -68,7 +70,7 @@ Not in the proposal. Worth including; it demonstrates threat modelling.
 
 ## 7. Concurrency controls
 
-**Section:** §3.4.2 or §3.4.3 · **Status:** PENDING
+**Section:** §3.4.2 or §3.4.3 · **Status:** APPLIED
 
 Not in the proposal.
 
@@ -78,7 +80,7 @@ Not in the proposal.
 
 ## 8. Real-time tracking wording
 
-**Sections:** §1.4, §2.1, FR15 · **Status:** PENDING
+**Sections:** §1.4, §2.1, FR15 · **Status:** APPLIED
 
 GPS is excluded from scope elsewhere in the document, so "real-time tracking" overstates what is built.
 
@@ -88,7 +90,7 @@ GPS is excluded from scope elsewhere in the document, so "real-time tracking" ov
 
 ## 9. Operator access
 
-**Sections:** §1.4, §3.3.5 (use case diagram) · **Status:** PENDING
+**Sections:** §1.4, §3.3.5 (use case diagram) · **Status:** APPLIED
 
 **Proposal / earlier amendment said:** Operators are served only through the web administration panel; a dedicated operator mobile app is future work.
 
@@ -100,7 +102,7 @@ GPS is excluded from scope elsewhere in the document, so "real-time tracking" ov
 
 ## 10. Payment network naming
 
-**Section:** §3.4.5 (wireframes) · **Status:** PENDING
+**Section:** §3.4.5 (wireframes) · **Status:** APPLIED
 
 Wireframes show Vodafone Cash. The network rebranded to Telecel Cash.
 
@@ -108,7 +110,7 @@ Wireframes show Vodafone Cash. The network rebranded to Telecel Cash.
 
 ## 11. Offline behaviour
 
-**Section:** §1.6 · **Status:** PENDING
+**Section:** §1.6 · **Status:** APPLIED
 
 The proposal flags loss of offline capability as a limitation. Partial mitigation was built.
 
@@ -118,7 +120,7 @@ The proposal flags loss of offline capability as a limitation. Partial mitigatio
 
 ## 12. Chatbot architecture
 
-**Sections:** §3.3.3 (FR16–FR17), §3.4.4 · **Status:** PENDING
+**Sections:** §3.3.3 (FR16–FR17), §3.4.4 · **Status:** APPLIED
 
 The proposal describes a rule-based assistant matching twelve keyword rules. What was built is substantially more capable and needs a fuller description.
 
@@ -128,7 +130,7 @@ The proposal describes a rule-based assistant matching twelve keyword rules. Wha
 
 ## 13. New table: chatbot_unmatched_logs
 
-**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** APPLIED
 
 The proposal's schema has six tables; there are now seven. **The ERD must be redrawn.**
 
@@ -138,7 +140,7 @@ The proposal's schema has six tables; there are now seven. **The ERD must be red
 
 ## 14. Chatbot rule count: twelve becomes sixteen
 
-**Section:** §3.4.4 · **Status:** PENDING
+**Section:** §3.4.4 · **Status:** APPLIED
 
 Twelve rules become sixteen. The original twelve plus:
 - **order_status** — looks up the authenticated user's most recent non-terminal order and reports its reference, status, and progress percentage.
@@ -152,7 +154,7 @@ Update any count of "twelve rules" or "thirteen rules" in the document to "sixte
 
 ## 15. Platform versions
 
-**Sections:** §3.4.1, §4 (implementation environment) · **Status:** PENDING
+**Sections:** §3.4.1, §4 (implementation environment) · **Status:** APPLIED
 
 State the versions actually used: PHP 8.4, Laravel 13, MySQL 8, Flutter 3.44, Filament 5 for the administration panel, Pest for automated testing, GitHub Actions for continuous integration.
 
@@ -160,7 +162,7 @@ State the versions actually used: PHP 8.4, Laravel 13, MySQL 8, Flutter 3.44, Fi
 
 ## 16. Testing and continuous integration
 
-**Section:** §4 · **Status:** PENDING
+**Section:** §4 · **Status:** APPLIED
 
 Not in the proposal. A defensible strength worth claiming.
 
@@ -170,7 +172,7 @@ Not in the proposal. A defensible strength worth claiming.
 
 ## 17. Complaint routing with suggested_issue_type
 
-**Section:** §3.4.4 · **Status:** PENDING
+**Section:** §3.4.4 · **Status:** APPLIED
 
 The proposal describes a single "report issue" intent. The implementation detects complaint vocabulary (late, damaged, paid but, wrong sand, etc.) and maps it to `issue_type` enum values.
 
@@ -180,7 +182,7 @@ The proposal describes a single "report issue" intent. The implementation detect
 
 ## 18. Entity bonus typing in scoring engine
 
-**Section:** §3.4.4 · **Status:** PENDING
+**Section:** §3.4.4 · **Status:** APPLIED
 
 The original scoring engine applied entity bonuses uniformly. This caused false positives where entity detection pulled unrelated intents (e.g. "quarry or river which is better" triggered pricing because a sand entity was detected).
 
@@ -190,7 +192,7 @@ The original scoring engine applied entity bonuses uniformly. This caused false 
 
 ## 19. Sand × Truck price matrix
 
-**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** APPLIED
 
 **Proposal said:** Single price per truck type.
 
@@ -202,7 +204,7 @@ The original scoring engine applied entity bonuses uniformly. This caused false 
 
 ## 20. Delivery zones with regional surcharges
 
-**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** APPLIED
 
 **Proposal said:** Free-text region field validated against a static list of all 16 Ghana regions.
 
@@ -214,7 +216,7 @@ The original scoring engine applied entity bonuses uniformly. This caused false 
 
 ## 21. Schema: 9 tables instead of 7
 
-**Sections:** §3.4.2 (data dictionary), ERD · **Status:** PENDING
+**Sections:** §3.4.2 (data dictionary), ERD · **Status:** APPLIED
 
 **Proposal said:** 7 tables. With `chatbot_unmatched_logs` (amendment 13) the count was 8; with `sand_truck_prices` and `delivery_zones` it is now 10. **The ERD must be redrawn.**
 
@@ -222,7 +224,7 @@ The original scoring engine applied entity bonuses uniformly. This caused false 
 
 ## 22. Data dictionary additions
 
-**Section:** §3.4.2 · **Status:** PENDING
+**Section:** §3.4.2 · **Status:** APPLIED
 
 New columns / tables added to the data dictionary:
 
@@ -244,7 +246,7 @@ New columns / tables added to the data dictionary:
 
 ## 23. Delivery fee is now real
 
-**Section:** §3.4.2 · **Status:** PENDING
+**Section:** §3.4.2 · **Status:** APPLIED
 
 **Proposal said:** `delivery_fee_ghs` existed on the order but was always 0.
 
@@ -254,7 +256,7 @@ New columns / tables added to the data dictionary:
 
 ## 24. Pricing rationale and launch coverage
 
-**Section:** §3.4.2 · **Status:** PENDING
+**Section:** §3.4.2 · **Status:** APPLIED
 
 Seed prices (GHS) for the initial deployment:
 
@@ -272,7 +274,7 @@ Surcharges: Greater Accra GHS 0, Central GHS 400.
 
 ## 25. Social sign-in (Google, Facebook)
 
-**Sections:** §3.3.3 (FR03–FR05), §3.4.5 (wireframes), §3.4.6 · **Status:** PENDING
+**Sections:** §3.3.3 (FR03–FR05), §3.4.5 (wireframes), §3.4.6 · **Status:** APPLIED
 
 **Proposal said:** Email and password registration / login only.
 

@@ -128,9 +128,9 @@ class _UnderlineField extends StatelessWidget {
           onChanged: onChanged,
           onSubmitted: onSubmitted,
           enabled: enabled,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppTheme.ink,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: AppTheme.ink),
           cursorColor: AppTheme.tipperAmber,
           decoration: InputDecoration(
             hintText: hint,

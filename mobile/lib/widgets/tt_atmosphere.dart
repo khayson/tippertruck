@@ -8,11 +8,7 @@ class TtAtmosphere extends StatelessWidget {
   final Widget child;
   final bool showStripes;
 
-  const TtAtmosphere({
-    super.key,
-    required this.child,
-    this.showStripes = true,
-  });
+  const TtAtmosphere({super.key, required this.child, this.showStripes = true});
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +17,7 @@ class TtAtmosphere extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE8DFD2),
-            AppTheme.bone,
-            Color(0xFFEFE8DC),
-          ],
+          colors: [Color(0xFFE8DFD2), AppTheme.bone, Color(0xFFEFE8DC)],
           stops: [0.0, 0.45, 1.0],
         ),
       ),
@@ -33,9 +25,7 @@ class TtAtmosphere extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (showStripes)
-            const Positioned.fill(
-              child: CustomPaint(painter: _GrainPainter()),
-            ),
+            const Positioned.fill(child: CustomPaint(painter: _GrainPainter())),
           child,
         ],
       ),

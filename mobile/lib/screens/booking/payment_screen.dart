@@ -147,10 +147,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
       momoNetwork: _isMomo ? _network : 'mtn',
     );
     final payload = booking.toOrderPayload();
-    final previewTotal = booking.previewTotalGhs(
-          context.read<ConfigProvider>().config,
-        ) ??
-        '—';
+    final previewTotal =
+        booking.previewTotalGhs(context.read<ConfigProvider>().config) ?? '—';
 
     setState(() {
       _submitting = true;
@@ -337,9 +335,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ? 'Demo: we simulate the MoMo prompt — no real charge.'
                           : 'You pay the driver — nothing is charged now.',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.slate,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
                     ),
                     const SizedBox(height: 10),
                     AppButton(
@@ -419,10 +417,9 @@ class _ProcessingView extends StatelessWidget {
                 ? 'Simulated wallet prompt — approve automatically in demo.'
                 : 'Confirming your cash-on-delivery booking.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: AppTheme.slate,
-              height: 1.4,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppTheme.slate, height: 1.4),
           ),
           const SizedBox(height: 32),
           Container(
@@ -481,7 +478,9 @@ class _ProcessStepRow extends StatelessWidget {
           height: 28,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: done || active ? color.withValues(alpha: 0.15) : TtStyle.line,
+            color: done || active
+                ? color.withValues(alpha: 0.15)
+                : TtStyle.line,
             border: Border.all(color: color, width: 2),
           ),
           child: done
@@ -567,9 +566,7 @@ class _AmountHero extends StatelessWidget {
           const SizedBox(height: 14),
           Container(
             height: 1,
-            color: isMomo
-                ? Colors.white.withValues(alpha: 0.12)
-                : TtStyle.line,
+            color: isMomo ? Colors.white.withValues(alpha: 0.12) : TtStyle.line,
           ),
           const SizedBox(height: 12),
           Row(
@@ -667,16 +664,16 @@ class _MethodTile extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.slate,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
               ),
             ],
           ),
@@ -720,16 +717,13 @@ class _MomoPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'MOMO WALLET',
-            style: TtStyle.eyebrow(color: AppTheme.slate),
-          ),
+          Text('MOMO WALLET', style: TtStyle.eyebrow(color: AppTheme.slate)),
           const SizedBox(height: 6),
           Text(
             'We will send a payment prompt to this number.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.slate,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
           ),
           const SizedBox(height: 16),
           AppTextField(
@@ -749,17 +743,17 @@ class _MomoPanel extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             'Network',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           if (networks.isEmpty)
             Text(
               'Networks loading…',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.slate,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
             )
           else
             Wrap(
@@ -820,9 +814,9 @@ class _CodPanel extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             'We book the truck now. Settlement happens at your gate.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.slate,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
           ),
           const SizedBox(height: 16),
           for (var i = 0; i < tips.length; i++) ...[
@@ -845,9 +839,9 @@ class _CodPanel extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       tips[i].$2,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        height: 1.35,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(height: 1.35),
                     ),
                   ),
                 ),

@@ -109,10 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _clearErrors();
     try {
       final auth = context.read<AuthProvider>();
-      await auth.loginWithSocial(
-        provider: provider,
-        mode: mode,
-      );
+      await auth.loginWithSocial(provider: provider, mode: mode);
       if (!mounted) return;
       context.go(AppRoutes.homeForRole(auth.user?.role));
     } on ApiException catch (e) {
@@ -271,9 +268,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: iconColor,
                           size: 22,
                         ),
-                        onPressed: () => setState(
-                          () => _obscureConfirm = !_obscureConfirm,
-                        ),
+                        onPressed: () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
                       ),
                     ),
                     const SizedBox(height: 36),
@@ -311,9 +307,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Center(
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.login),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(48, 48),
-                  ),
+                  style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
                   child: Text.rich(
                     TextSpan(
                       text: 'Already have an account? ',
