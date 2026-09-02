@@ -17,7 +17,14 @@ import '../../widgets/tt_atmosphere.dart';
 
 /// Local UX hints only — city is still free text; server validates region.
 const _cityHints = <String, List<String>>{
-  'Greater Accra': ['Accra', 'Tema', 'Madina', 'Kasoa', 'Spintex', 'East Legon'],
+  'Greater Accra': [
+    'Accra',
+    'Tema',
+    'Madina',
+    'Kasoa',
+    'Spintex',
+    'East Legon',
+  ],
   'Central': ['Cape Coast', 'Winneba', 'Kasoa', 'Mankessim'],
   'Ashanti': ['Kumasi', 'Ejisu', 'Obuasi'],
   'Eastern': ['Koforidua', 'Nkawkaw', 'Akim Oda'],
@@ -158,7 +165,8 @@ class _DeliveryLocationScreenState extends State<DeliveryLocationScreen> {
     } else if (phone.length == 10) {
       _phoneError = null;
     } else {
-      _phoneError = '${10 - phone.length} more digit${10 - phone.length == 1 ? '' : 's'}';
+      _phoneError =
+          '${10 - phone.length} more digit${10 - phone.length == 1 ? '' : 's'}';
     }
   }
 
@@ -292,7 +300,9 @@ class _DeliveryLocationScreenState extends State<DeliveryLocationScreen> {
     final base = booking.basePriceGhs(config);
     final fee = booking.surchargeForRegion(config, _region);
     final total = booking.previewTotalGhs(config, regionOverride: _region);
-    final cityHints = _region == null ? const <String>[] : (_cityHints[_region!] ?? const <String>[]);
+    final cityHints = _region == null
+        ? const <String>[]
+        : (_cityHints[_region!] ?? const <String>[]);
 
     if (!draft.hasTruck) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -318,10 +328,7 @@ class _DeliveryLocationScreenState extends State<DeliveryLocationScreen> {
           ),
           actions: [
             if (_name.text.isNotEmpty || _street.text.isNotEmpty)
-              TextButton(
-                onPressed: _clearForm,
-                child: const Text('Clear'),
-              ),
+              TextButton(onPressed: _clearForm, child: const Text('Clear')),
           ],
         ),
         body: Column(
@@ -408,7 +415,8 @@ class _DeliveryLocationScreenState extends State<DeliveryLocationScreen> {
                           const SizedBox(height: 12),
                           ...zones.map((zone) {
                             final selected = _region == zone.region;
-                            final feeVal = double.tryParse(zone.surchargeGhs) ?? 0;
+                            final feeVal =
+                                double.tryParse(zone.surchargeGhs) ?? 0;
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: _RegionFeeTile(
@@ -617,9 +625,9 @@ class _SmartHeader extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '$sand · $truck',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: Colors.white),
                     ),
                   ],
                 ),
@@ -730,9 +738,9 @@ class _SavedAddressCard extends StatelessWidget {
           ),
           Text(
             line,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.slate,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -795,7 +803,11 @@ class _DynamicSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: complete
-                    ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      )
                     : Text(
                         '$index',
                         style: const TextStyle(
@@ -937,9 +949,9 @@ class _SaveAddressTile extends StatelessWidget {
                     ),
                     Text(
                       'On this phone only — next booking is faster',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.slate,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
                     ),
                   ],
                 ),
@@ -1012,10 +1024,7 @@ class _LiveDock extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         totalGhs == null ? 'GHS —' : 'GHS $totalGhs',
-                        style: TtStyle.display(
-                          24,
-                          color: AppTheme.tipperAmber,
-                        ),
+                        style: TtStyle.display(24, color: AppTheme.tipperAmber),
                       ),
                     ],
                   ),
@@ -1025,9 +1034,9 @@ class _LiveDock extends StatelessWidget {
                   children: [
                     Text(
                       'Load ${baseGhs ?? '—'}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.slate,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppTheme.slate),
                     ),
                     Text(
                       region == null

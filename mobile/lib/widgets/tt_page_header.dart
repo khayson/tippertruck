@@ -35,10 +35,7 @@ class TtPageHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
               ],
-              Text(
-                title,
-                style: TtStyle.display(30, color: titleColor),
-              ),
+              Text(title, style: TtStyle.display(30, color: titleColor)),
               if (subtitle != null) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -52,10 +49,7 @@ class TtPageHeader extends StatelessWidget {
             ],
           ),
         ),
-        if (trailing != null) ...[
-          const SizedBox(width: 12),
-          trailing!,
-        ],
+        if (trailing != null) ...[const SizedBox(width: 12), trailing!],
       ],
     );
   }

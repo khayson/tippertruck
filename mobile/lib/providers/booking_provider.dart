@@ -124,10 +124,7 @@ class BookingProvider extends ChangeNotifier {
   }
 
   /// Preview with an optional region override (live delivery form).
-  String? previewTotalGhs(
-    ConfigData? config, {
-    String? regionOverride,
-  }) {
+  String? previewTotalGhs(ConfigData? config, {String? regionOverride}) {
     final base = basePriceGhs(config);
     if (base == null) return null;
     final region = regionOverride ?? _draft.region;

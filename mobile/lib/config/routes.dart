@@ -154,27 +154,23 @@ class AppRoutes {
         ),
         GoRoute(
           path: home,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: _tab(home, const HomeScreen()),
-          ),
+          pageBuilder: (context, state) =>
+              NoTransitionPage(child: _tab(home, const HomeScreen())),
         ),
         GoRoute(
           path: orders,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: _tab(orders, const OrdersScreen()),
-          ),
+          pageBuilder: (context, state) =>
+              NoTransitionPage(child: _tab(orders, const OrdersScreen())),
         ),
         GoRoute(
           path: chat,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: _tab(chat, const ChatbotScreen()),
-          ),
+          pageBuilder: (context, state) =>
+              NoTransitionPage(child: _tab(chat, const ChatbotScreen())),
         ),
         GoRoute(
           path: profile,
-          pageBuilder: (context, state) => NoTransitionPage(
-            child: _tab(profile, const ProfileScreen()),
-          ),
+          pageBuilder: (context, state) =>
+              NoTransitionPage(child: _tab(profile, const ProfileScreen())),
         ),
         GoRoute(
           path: bookingTruck,

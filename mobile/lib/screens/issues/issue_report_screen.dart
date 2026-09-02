@@ -97,9 +97,9 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
               const SizedBox(height: 20),
               Text(
                 'Issue type',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -114,8 +114,7 @@ class _IssueReportScreenState extends State<IssueReportScreen> {
                       _type = t.value;
                       _typeError = null;
                     }),
-                    selectedColor:
-                        AppTheme.tipperAmber.withValues(alpha: 0.18),
+                    selectedColor: AppTheme.tipperAmber.withValues(alpha: 0.18),
                   );
                 }).toList(),
               ),

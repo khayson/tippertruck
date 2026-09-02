@@ -57,10 +57,7 @@ class _IssuesScreenState extends State<IssuesScreen> {
           child: issues.loading && issues.issues.isEmpty
               ? const Center(child: CircularProgressIndicator())
               : issues.error != null && issues.issues.isEmpty
-              ? ErrorState(
-                  message: issues.error!,
-                  onRetry: () => issues.load(),
-                )
+              ? ErrorState(message: issues.error!, onRetry: () => issues.load())
               : issues.issues.isEmpty
               ? ListView(
                   children: [
@@ -68,16 +65,14 @@ class _IssuesScreenState extends State<IssuesScreen> {
                     const EmptyState(
                       icon: Icons.report_problem_outlined,
                       title: 'No issues reported',
-                      subtitle:
-                          'Something wrong with a delivery? Tell us.',
+                      subtitle: 'Something wrong with a delivery? Tell us.',
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 48),
                       child: AppButton(
                         label: 'Report an issue',
                         dark: true,
-                        onPressed: () =>
-                            context.push(AppRoutes.issueReport),
+                        onPressed: () => context.push(AppRoutes.issueReport),
                       ),
                     ),
                   ],
@@ -112,24 +107,19 @@ class _IssuesScreenState extends State<IssuesScreen> {
                               Expanded(
                                 child: Text(
                                   item.issueTypeLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
                               ),
-                              StatusBadge(
-                                label: item.status,
-                                color: accent,
-                              ),
+                              StatusBadge(label: item.status, color: accent),
                             ],
                           ),
                           if (item.orderRef != null) ...[
                             const SizedBox(height: 4),
                             Text(
                               item.orderRef!,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: AppTheme.slate),
                             ),
                           ],
@@ -140,9 +130,7 @@ class _IssuesScreenState extends State<IssuesScreen> {
                             const SizedBox(height: 10),
                             Text(
                               'Response: ${item.adminResponse}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: AppTheme.signal),
                             ),
                           ],

@@ -42,8 +42,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
   @override
   Widget build(BuildContext context) {
     final orders = context.watch<OrdersProvider>();
-    final order =
-        orders.tracked?.id == widget.orderId ? orders.tracked : null;
+    final order = orders.tracked?.id == widget.orderId ? orders.tracked : null;
 
     if (order == null) {
       return TtAtmosphere(
@@ -53,9 +52,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
               ? const Center(child: CircularProgressIndicator())
               : ErrorState(
                   message: 'Could not load your order.',
-                  onRetry: () => context
-                      .read<OrdersProvider>()
-                      .loadTracked(widget.orderId),
+                  onRetry: () => context.read<OrdersProvider>().loadTracked(
+                    widget.orderId,
+                  ),
                 ),
         ),
       );
@@ -64,9 +63,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     return TtAtmosphere(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: _SuccessContent(order: order),
-        ),
+        body: SafeArea(child: _SuccessContent(order: order)),
       ),
     );
   }
@@ -230,9 +227,7 @@ class _SuccessContentState extends State<_SuccessContent>
                                 shape: BoxShape.circle,
                                 color: AppTheme.signal.withValues(alpha: 0.14),
                                 border: Border.all(
-                                  color: AppTheme.signal.withValues(
-                                    alpha: 0.4,
-                                  ),
+                                  color: AppTheme.signal.withValues(alpha: 0.4),
                                   width: 3,
                                 ),
                                 boxShadow: [
@@ -380,21 +375,14 @@ class _FadeSlide extends StatelessWidget {
   final double dy;
   final Widget child;
 
-  const _FadeSlide({
-    required this.progress,
-    this.dy = 18,
-    required this.child,
-  });
+  const _FadeSlide({required this.progress, this.dy = 18, required this.child});
 
   @override
   Widget build(BuildContext context) {
     final t = progress.clamp(0.0, 1.0);
     return Opacity(
       opacity: t,
-      child: Transform.translate(
-        offset: Offset(0, dy * (1 - t)),
-        child: child,
-      ),
+      child: Transform.translate(offset: Offset(0, dy * (1 - t)), child: child),
     );
   }
 }
@@ -468,26 +456,20 @@ class _OrderCard extends StatelessWidget {
             value: '${order.sandTypeName} · ${order.truckTypeName}',
           ),
           const SizedBox(height: 10),
-          _Row(
-            label: 'Deliver to',
-            value: order.delivery.recipientName,
-          ),
+          _Row(label: 'Deliver to', value: order.delivery.recipientName),
           const SizedBox(height: 4),
           Text(
             '${order.delivery.city}, ${order.delivery.region}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.slate,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
           ),
           const SizedBox(height: 14),
           Container(height: 1, color: TtStyle.line),
           const SizedBox(height: 14),
           Row(
             children: [
-              Text(
-                'Total',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Total', style: Theme.of(context).textTheme.titleMedium),
               const Spacer(),
               Text(
                 'GHS ${order.totalGhs}',
@@ -516,16 +498,13 @@ class _Row extends StatelessWidget {
           width: 72,
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.slate,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          child: Text(value, style: Theme.of(context).textTheme.titleMedium),
         ),
       ],
     );

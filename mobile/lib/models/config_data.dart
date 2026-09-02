@@ -133,7 +133,8 @@ class SocialAuthConfig {
     }
     return SocialAuthConfig(
       mode: json['mode'] as String? ?? 'simulated',
-      providers: (json['providers'] as List<dynamic>?)
+      providers:
+          (json['providers'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const ['google', 'facebook'],

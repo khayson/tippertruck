@@ -26,11 +26,8 @@ class AppToast {
     if (overlay == null) return;
 
     final entry = OverlayEntry(
-      builder: (_) => _ToastHost(
-        message: message,
-        type: type,
-        onDismiss: dismiss,
-      ),
+      builder: (_) =>
+          _ToastHost(message: message, type: type, onDismiss: dismiss),
     );
 
     _current = entry;

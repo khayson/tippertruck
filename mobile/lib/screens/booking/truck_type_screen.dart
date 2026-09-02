@@ -51,8 +51,9 @@ class TruckTypeScreen extends StatelessWidget {
     final sand = booking.draft.sandType;
     final trucks = config?.truckTypes ?? [];
     final selected = booking.draft.truckType;
-    final selectedPrice =
-        selected == null ? null : _matrixPrice(config, sand, selected);
+    final selectedPrice = selected == null
+        ? null
+        : _matrixPrice(config, sand, selected);
 
     if (sand == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -210,9 +211,7 @@ class _SmartTip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.tipperAmber.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.tipperAmber.withValues(alpha: 0.22),
-        ),
+        border: Border.all(color: AppTheme.tipperAmber.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,8 +343,9 @@ class _TruckCard extends StatelessWidget {
                                 ),
                                 child: Text(
                                   'POPULAR',
-                                  style: TtStyle.eyebrow(color: Colors.white)
-                                      .copyWith(fontSize: 9, letterSpacing: 1),
+                                  style: TtStyle.eyebrow(
+                                    color: Colors.white,
+                                  ).copyWith(fontSize: 9, letterSpacing: 1),
                                 ),
                               ),
                             ],
@@ -354,8 +354,9 @@ class _TruckCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           truck.capacityLabel,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: muted),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: muted),
                         ),
                       ],
                     ),
@@ -373,10 +374,7 @@ class _TruckCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
-                'CAPACITY',
-                style: TtStyle.eyebrow(color: muted),
-              ),
+              Text('CAPACITY', style: TtStyle.eyebrow(color: muted)),
               const SizedBox(height: 8),
               ClipRRect(
                 borderRadius: BorderRadius.circular(99),
@@ -494,9 +492,9 @@ class _ContinueDock extends StatelessWidget {
                       key: const ValueKey('empty'),
                       'Choose a truck size to continue',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.slate,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: AppTheme.slate),
                     )
                   : Row(
                       key: ValueKey(selected!.id),

@@ -91,10 +91,7 @@ class _DriverOrderDetailScreenState extends State<DriverOrderDetailScreen> {
                   children: [
                     Text(order.orderRef, style: TtStyle.display(28)),
                     const SizedBox(height: 12),
-                    StatusBadge(
-                      label: order.statusLabel,
-                      color: accent,
-                    ),
+                    StatusBadge(label: order.statusLabel, color: accent),
                     const SizedBox(height: 18),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(99),

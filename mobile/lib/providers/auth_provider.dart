@@ -104,7 +104,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final idToken = await _resolveSocialIdToken(provider: provider, mode: mode);
+      final idToken = await _resolveSocialIdToken(
+        provider: provider,
+        mode: mode,
+      );
       final data = await _api.post(
         '/auth/social',
         data: {'provider': provider, 'id_token': idToken},
