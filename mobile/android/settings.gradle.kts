@@ -12,6 +12,8 @@ pluginManagement {
 
     repositories {
         google()
+        mavenLocal()
+        maven(url = uri("https://repo1.maven.org/maven2/"))
         mavenCentral()
         gradlePluginPortal()
     }

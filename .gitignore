@@ -43,6 +43,7 @@ auth.json
 
 # ── Flutter (mobile/) ─────────────────────────────────────────
 /mobile/build/
+/mobile/android/build/
 /mobile/.dart_tool/
 /mobile/.flutter-plugins
 /mobile/.flutter-plugins-dependencies
@@ -65,10 +66,18 @@ auth.json
 /mobile/ios/Runner/GeneratedPluginRegistrant.*
 /mobile/**/*.g.dart.bak
 
+# ── Python / scripts ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+docs/_crops/
+
 # ── Proposal document — contains student index numbers ───────
 *.docx
 *.doc
+*.pdf
 TipperTruck_Proposal*
+docs/TipperTruck.pdf
 
 # ── Build output / artefacts ──────────────────────────────────
 *.apk
@@ -76,3 +85,4 @@ TipperTruck_Proposal*
 *.ipa
 *.log
 /tmp/
+

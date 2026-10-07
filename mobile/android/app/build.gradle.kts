@@ -7,7 +7,9 @@ plugins {
 android {
     namespace = "com.khaystudios.tippertruck"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Flutter 3.47's default NDK (28.2.13676358) is a broken installer stub
+    // locally; sdkmanager crashes repairing it. Use the complete NDK 30 copy.
+    ndkVersion = "30.0.16248370"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

@@ -1,6 +1,8 @@
 allprojects {
     repositories {
         google()
+        mavenLocal()
+        maven(url = uri("https://repo1.maven.org/maven2/"))
         mavenCentral()
     }
 }
@@ -14,6 +16,14 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+}
+subprojects {
+    afterEvaluate {
+        extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)?.ndkVersion =
+            "30.0.16248370"
+        extensions.findByType(com.android.build.gradle.AppExtension::class.java)?.ndkVersion =
+            "30.0.16248370"
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

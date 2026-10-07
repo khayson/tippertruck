@@ -14,7 +14,7 @@ setup:
 	cd mobile && flutter pub get
 
 api:
-	cd api && php artisan serve
+	cd api && php artisan serve --host=0.0.0.0 --port=8000
 
 mobile:
 	cd mobile && flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
