@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Orders\Tables;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\UserRole;
 use App\Models\Order;
@@ -13,11 +14,16 @@ use App\Services\Payments\PaymentService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\FiltersLayout;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -80,30 +86,95 @@ class OrdersTable
             ])
             ->filters([
                 SelectFilter::make('status')
+                    ->label('Status')
+                    ->multiple()
                     ->options(collect(OrderStatus::cases())->mapWithKeys(
                         fn (OrderStatus $status) => [$status->value => $status->label()],
                     )),
                 SelectFilter::make('payment_status')
-                    ->label('Payment')
+                    ->label('Payment status')
                     ->options(collect(PaymentStatus::cases())->mapWithKeys(
                         fn (PaymentStatus $status) => [$status->value => ucfirst($status->value)],
                     )),
-                SelectFilter::make('created_at')
-                    ->label('Placed')
+                SelectFilter::make('payment_method')
+                    ->label('Payment method')
                     ->options([
-                        'today' => 'Today',
-                        'week' => 'This week',
-                        'month' => 'This month',
+                        PaymentMethod::Momo->value => 'Mobile Money',
+                        PaymentMethod::Cod->value => 'Cash on delivery',
+                    ]),
+                SelectFilter::make('sand_type_id')
+                    ->label('Sand')
+                    ->relationship('sandType', 'name')
+                    ->preload()
+                    ->searchable(),
+                SelectFilter::make('truck_type_id')
+                    ->label('Truck')
+                    ->relationship('truckType', 'name')
+                    ->preload()
+                    ->searchable(),
+                SelectFilter::make('region')
+                    ->label('Region')
+                    ->searchable()
+                    ->options(collect(config('ghana.regions'))->mapWithKeys(
+                        fn (string $region) => [$region => $region],
+                    )),
+                SelectFilter::make('assigned_operator_id')
+                    ->label('Operator')
+                    ->relationship(
+                        'assignedOperator',
+                        'name',
+                        fn (Builder $query): Builder => $query->where('role', UserRole::Operator),
+                        hasEmptyOption: true,
+                    )
+                    ->preload()
+                    ->searchable(),
+                Filter::make('placed_from')
+                    ->label('Placed from')
+                    ->schema([
+                        DatePicker::make('value')
+                            ->label('Placed from')
+                            ->native(false),
                     ])
-                    ->query(function ($query, array $data) {
-                        return match ($data['value'] ?? null) {
-                            'today' => $query->whereDate('created_at', today()),
-                            'week' => $query->where('created_at', '>=', now()->startOfWeek()),
-                            'month' => $query->where('created_at', '>=', now()->startOfMonth()),
-                            default => $query,
-                        };
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            filled($data['value'] ?? null),
+                            fn (Builder $q): Builder => $q->whereDate('created_at', '>=', $data['value']),
+                        );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        if (blank($data['value'] ?? null)) {
+                            return [];
+                        }
+
+                        return [Indicator::make('From '.$data['value'])->removeField('value')];
                     }),
+                Filter::make('placed_until')
+                    ->label('Placed until')
+                    ->schema([
+                        DatePicker::make('value')
+                            ->label('Placed until')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            filled($data['value'] ?? null),
+                            fn (Builder $q): Builder => $q->whereDate('created_at', '<=', $data['value']),
+                        );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        if (blank($data['value'] ?? null)) {
+                            return [];
+                        }
+
+                        return [Indicator::make('Until '.$data['value'])->removeField('value')];
+                    }),
+            ], layout: FiltersLayout::AboveContent)
+            ->filtersFormColumns([
+                'default' => 1,
+                'sm' => 2,
+                'lg' => 3,
             ])
+            ->deferFilters(false)
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()

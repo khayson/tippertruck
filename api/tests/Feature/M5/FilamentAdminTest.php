@@ -106,3 +106,22 @@ it('renders the orders list for an admin', function (): void {
     Livewire::test(ListOrders::class)
         ->assertSuccessful();
 });
+
+it('shows advanced order filters above the table and filters by status', function (): void {
+    actingAs($this->admin);
+
+    $confirmed = Order::factory()->create(['status' => OrderStatus::Confirmed]);
+    $delivered = Order::factory()->delivered()->create();
+
+    Livewire::test(ListOrders::class)
+        ->assertSuccessful()
+        ->assertSee('Payment status')
+        ->assertTableFilterExists('status')
+        ->assertTableFilterExists('payment_method')
+        ->assertTableFilterExists('placed_from')
+        ->assertSee($confirmed->order_ref)
+        ->assertSee($delivered->order_ref)
+        ->filterTable('status', [OrderStatus::Delivered])
+        ->assertSee($delivered->order_ref)
+        ->assertDontSee($confirmed->order_ref);
+});
