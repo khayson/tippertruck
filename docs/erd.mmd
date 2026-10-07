@@ -14,34 +14,34 @@
 }}%%
 erDiagram
     USERS ||--o{ ORDERS : "places (user_id RESTRICT)"
-    USERS ||--o{ ORDERS : "assigned as operator (SET NULL)"
+    USERS |o--o{ ORDERS : "assigned as operator (SET NULL)"
     SAND_TYPES ||--o{ ORDERS : "sand_type_id RESTRICT"
     TRUCK_TYPES ||--o{ ORDERS : "truck_type_id RESTRICT"
     ORDERS ||--o{ ORDER_STATUS_LOG : "order_id CASCADE"
-    USERS ||--o{ ORDER_STATUS_LOG : "changed_by SET NULL"
+    USERS |o--o{ ORDER_STATUS_LOG : "changed_by SET NULL"
     USERS ||--o{ ISSUES : "user_id CASCADE"
-    ORDERS ||--o{ ISSUES : "order_id SET NULL"
+    ORDERS |o--o{ ISSUES : "order_id SET NULL"
     SAND_TYPES ||--o{ SAND_TRUCK_PRICES : "sand_type_id RESTRICT"
     TRUCK_TYPES ||--o{ SAND_TRUCK_PRICES : "truck_type_id RESTRICT"
-    USERS ||--o{ CHATBOT_UNMATCHED_LOGS : "user_id CASCADE"
-    DELIVERY_ZONES }o..o{ ORDERS : "region matched at create (no FK)"
+    USERS |o--o{ CHATBOT_UNMATCHED_LOGS : "user_id CASCADE"
+    DELIVERY_ZONES ||..o{ ORDERS : "region matched at create (no FK)"
 
     USERS {
         bigint id PK
         string name
         string email UK
         string password "nullable for social"
-        string phone
+        string phone "nullable"
         string role
-        string provider
-        string provider_id
+        string provider "nullable"
+        string provider_id "nullable"
     }
     SAND_TYPES {
         bigint id PK
         string name
         string slug UK
         string description
-        string icon
+        string icon "nullable"
         string image "nullable"
         boolean is_active
         int sort_order
@@ -51,9 +51,12 @@ erDiagram
         string name
         string slug UK
         string capacity_label
+        decimal capacity_tonnes_min
+        decimal capacity_tonnes_max "nullable"
         decimal price_ghs "deprecated"
         boolean is_popular
         boolean is_active
+        int sort_order
     }
     SAND_TRUCK_PRICES {
         bigint id PK
@@ -73,10 +76,11 @@ erDiagram
         bigint user_id FK
         bigint sand_type_id FK
         bigint truck_type_id FK
-        bigint assigned_operator_id FK
+        bigint assigned_operator_id FK "nullable"
         decimal price_ghs
         decimal delivery_fee_ghs
         decimal total_ghs
+        string region
         string payment_method
         string payment_status
         string status
@@ -84,24 +88,24 @@ erDiagram
     ORDER_STATUS_LOG {
         bigint id PK
         bigint order_id FK
-        string old_status
+        string old_status "nullable"
         string new_status
-        bigint changed_by FK
-        string note
+        bigint changed_by FK "nullable"
+        string note "nullable"
     }
     ISSUES {
         bigint id PK
         bigint user_id FK
-        bigint order_id FK
+        bigint order_id FK "nullable"
         string issue_type
         text description
         string status
-        text admin_response
+        text admin_response "nullable"
     }
     CHATBOT_UNMATCHED_LOGS {
         bigint id PK
-        bigint user_id FK
+        bigint user_id FK "nullable"
         text message
-        string top_intent
-        decimal confidence
+        string top_intent "nullable"
+        decimal confidence "nullable"
     }

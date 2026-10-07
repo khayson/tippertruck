@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tipper Truck App — ER Diagrams Comparison</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #D45A12;
+      --primary-dark: #A84209;
+      --bg: #F7F5F2;
+      --surface: #FFFFFF;
+      --text: #191713;
+      --muted: #6B655C;
+      --border: #E5DFD7;
+      --card-bg: #FFF7ED;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 24px;
+    }
+    .header {
+      max-width: 1400px;
+      margin: 0 auto 24px auto;
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 24px 32px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .header h1 {
+      font-size: 26px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: rgba(212, 90, 18, 0.08);
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #FFF;
+    }
+    .content-area {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .tab-pane {
+      display: none;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 28px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      margin-bottom: 30px;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    .info-box {
+      background: var(--card-bg);
+      border-left: 4px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .info-box h3 {
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+    .diagram-wrapper {
+      background: #FAF8F5;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .diagram-wrapper img, .diagram-wrapper svg {
+      max-width: 100%;
+      height: auto;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .comparison-table th, .comparison-table td {
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      text-align: left;
+    }
+    .comparison-table th {
+      background: var(--card-bg);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-primary { background: #FDE68A; color: #92400E; }
+    .badge-secondary { background: #E5E7EB; color: #374151; }
+    .shape-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #FFF;
+      border: 1px solid var(--border);
+      padding: 12px 18px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .shape-icon {
+      width: 50px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 11px;
+    }
+    .shape-rect { background: #FFF7ED; border: 2px solid var(--primary); border-radius: 3px; }
+    .shape-diamond { background: #FEF3C7; border: 2px solid #D97706; transform: rotate(45deg); width: 28px; height: 28px; margin: 3px 11px; }
+    .shape-oval { background: #FFF; border: 1.5px solid #6B7280; border-radius: 50%; }
+    .shape-weak { background: #F3F4F6; border: 2px double #4B5563; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1><span>🚚</span> Tipper Truck App — ER Diagrams Comparison</h1>
+    <p>Visualizing the two standard styles of Entity-Relationship Diagrams: <strong>Relational Database (Crow's Foot)</strong> vs. <strong>Conceptual DBMS (Peter Chen Notation)</strong>.</p>
+    
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('crowsfoot')">1. Relational ERD (Crow's Foot - Table Boxes)</button>
+      <button class="tab-btn" onclick="showTab('chen')">2. Conceptual ERD (Peter Chen - Different Shapes)</button>
+      <button class="tab-btn" onclick="showTab('guide')">3. Academic Guide & Supervisor Defense</button>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- TAB 1: CROW'S FOOT -->
+    <div id="crowsfoot" class="tab-pane active">
+      <div class="info-box">
+        <h3>Notation 1: Crow's Foot Relational Database Schema (Modern Engineering Standard)</h3>
+        <p><strong>Shapes:</strong> Uses <em>only rectangular table boxes</em>. Each box contains the table name, columns, data types, and primary/foreign keys (PK, FK). Lines connect tables with crow's foot symbols: <code>||</code> (Mandatory 1), <code>|o</code> (Optional 0..1), and <code>o{</code> (0 or many).</p>
+        <p style="margin-top:6px;"><strong>Status:</strong> This is the style currently used in your proposal document (Figure 3.5), corrected for accurate nullable cardinalities.</p>
+      </div>
+
+      <div class="diagram-wrapper">
+        <div class="mermaid">
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#F4F0E8",
+    "primaryTextColor": "#191713",
+    "primaryBorderColor": "#D45A12",
+    "lineColor": "#6B655C",
+    "secondaryColor": "#FFF7ED",
+    "tertiaryColor": "#FFFFFF",
+    "fontFamily": "Segoe UI, Arial, sans-serif",
+    "fontSize": "14px"
+  },
+  "er": { "layoutDirection": "TB", "useMaxWidth": true }
+}}%%
+erDiagram
+    USERS ||--o{ ORDERS : "places (user_id RESTRICT)"
+    USERS |o--o{ ORDERS : "assigned as operator (SET NULL)"
+    SAND_TYPES ||--o{ ORDERS : "sand_type_id RESTRICT"
+    TRUCK_TYPES ||--o{ ORDERS : "truck_type_id RESTRICT"
+    ORDERS ||--o{ ORDER_STATUS_LOG : "order_id CASCADE"
+    USERS |o--o{ ORDER_STATUS_LOG : "changed_by SET NULL"
+    USERS ||--o{ ISSUES : "user_id CASCADE"
+    ORDERS |o--o{ ISSUES : "order_id SET NULL"
+    SAND_TYPES ||--o{ SAND_TRUCK_PRICES : "sand_type_id RESTRICT"
+    TRUCK_TYPES ||--o{ SAND_TRUCK_PRICES : "truck_type_id RESTRICT"
+    USERS |o--o{ CHATBOT_UNMATCHED_LOGS : "user_id CASCADE"
+    DELIVERY_ZONES ||..o{ ORDERS : "region matched at create (no FK)"
+
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password "nullable for social"
+        string phone "nullable"
+        string role
+        string provider "nullable"
+        string provider_id "nullable"
+    }
+    SAND_TYPES {
+        bigint id PK
+        string name
+        string slug UK
+        string description
+        string icon "nullable"
+        string image "nullable"
+        boolean is_active
+        int sort_order
+    }
+    TRUCK_TYPES {
+        bigint id PK
+        string name
+        string slug UK
+        string capacity_label
+        decimal capacity_tonnes_min
+        decimal capacity_tonnes_max "nullable"
+        decimal price_ghs "deprecated"
+        boolean is_popular
+        boolean is_active
+        int sort_order
+    }
+    SAND_TRUCK_PRICES {
+        bigint id PK
+        bigint sand_type_id FK
+        bigint truck_type_id FK
+        decimal price_ghs
+    }
+    DELIVERY_ZONES {
+        bigint id PK
+        string region UK
+        decimal surcharge_ghs
+        boolean is_active
+    }
+    ORDERS {
+        bigint id PK
+        string order_ref UK
+        bigint user_id FK
+        bigint sand_type_id FK
+        bigint truck_type_id FK
+        bigint assigned_operator_id FK "nullable"
+        decimal price_ghs
+        decimal delivery_fee_ghs
+        decimal total_ghs
+        string region
+        string payment_method
+        string payment_status
+        string status
+    }
+    ORDER_STATUS_LOG {
+        bigint id PK
+        bigint order_id FK
+        string old_status "nullable"
+        string new_status
+        bigint changed_by FK "nullable"
+        string note "nullable"
+    }
+    ISSUES {
+        bigint id PK
+        bigint user_id FK
+        bigint order_id FK "nullable"
+        string issue_type
+        text description
+        string status
+        text admin_response "nullable"
+    }
+    CHATBOT_UNMATCHED_LOGS {
+        bigint id PK
+        bigint user_id FK "nullable"
+        text message
+        string top_intent "nullable"
+        decimal confidence "nullable"
+    }
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CHEN'S NOTATION -->
+    <div id="chen" class="tab-pane">
+      <div class="info-box">
+        <h3>Notation 2: Peter Chen's Conceptual ERD (Different Shapes Style)</h3>
+        <p><strong>Shapes Used:</strong></p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:10px; margin-top:10px;">
+          <div class="shape-card">
+            <div class="shape-icon shape-rect">USER</div>
+            <div><strong>Rectangle:</strong> Entity sets (User, Order, Truck)</div>
+          </div>
+          <div class="shape-card">
+            <div class="shape-icon"><div class="shape-diamond"></div></div>
+            <div><strong>Diamond:</strong> Relationships (Places, Assigned, Reports)</div>
+          </div>
+          <div class="shape-card">
+            <div class="shape-icon shape-oval">id</div>
+            <div><strong>Oval:</strong> Attributes (Primary keys are <u>underlined</u>)</div>
+          </div>
+          <div class="shape-card">
+            <div class="shape-icon shape-weak">LOG</div>
+            <div><strong>Double Rectangle:</strong> Weak Entity (Order_Status_Log)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="diagram-wrapper">
+        <object data="erd_chen_notation.svg" type="image/svg+xml" style="width:100%; max-height:850px;"></object>
+      </div>
+    </div>
+
+    <!-- TAB 3: GUIDE -->
+    <div id="guide" class="tab-pane">
+      <div class="info-box">
+        <h3>How to Choose Between Both Diagrams for Your Final Year Project Defense</h3>
+        <p>In undergraduate computing dissertations (GCTU / BSc Computer Science & Information Technology), different lecturers emphasize different stages of database design.</p>
+      </div>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Comparison Criterion</th>
+            <th>Crow's Foot Notation (Option 1)</th>
+            <th>Peter Chen's Notation (Option 2)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Visual Elements</strong></td>
+            <td><strong>Only rectangular table boxes</strong> with column rows and Crow's foot line terminals.</td>
+            <td><strong>Different geometric shapes:</strong> Rectangles (entities), Diamonds (relationships), Ovals (attributes).</td>
+          </tr>
+          <tr>
+            <td><strong>Database Design Phase</strong></td>
+            <td><strong>Physical / Logical Design:</strong> Represents actual MySQL tables, columns, indexes, data types, and foreign keys.</td>
+            <td><strong>Conceptual Design:</strong> Represents abstract business entities, associations, and cardinalities (1:1, 1:N, M:N).</td>
+          </tr>
+          <tr>
+            <td><strong>Industry & Real-World Use</strong></td>
+            <td><span class="badge badge-primary">Standard</span> Used by MySQL Workbench, DBeaver, Laravel, Prisma, and enterprise documentation.</td>
+            <td><span class="badge badge-secondary">Academic</span> Primarily used in DBMS textbooks and university lecture slides.</td>
+          </tr>
+          <tr>
+            <td><strong>Handling Large Schemas</strong></td>
+            <td><strong>High readability:</strong> 9 tables and 50+ attributes fit cleanly on a single portrait or landscape page.</td>
+            <td><strong>Can get crowded:</strong> Drawing 50+ attribute ovals creates a large spiderweb; usually only key attributes are shown.</td>
+          </tr>
+          <tr>
+            <td><strong>Associative Table (Price Matrix)</strong></td>
+            <td>Shown as table <code>SAND_TRUCK_PRICES</code> with two FKs and a composite unique index.</td>
+            <td>Shown as an M:N Relationship diamond (<code>Priced At</code>) carrying attribute <code>price_ghs</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>Recommendation for Proposal</strong></td>
+            <td><strong>Primary Choice for Figure 3.5:</strong> Matches your Laravel 13 MySQL implementation and Table 3.4 Data Dictionary.</td>
+            <td><strong>Ideal as Conceptual Model:</strong> Great to include in Section 3.4.2 as Figure 3.4b if your supervisor asks for classic shapes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+  </script>
+</body>
+</html>
